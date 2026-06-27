@@ -1,65 +1,64 @@
-import Image from "next/image";
+﻿import { mockSoftware, mockCategories, allTags } from '@/lib/mock';
+import SoftwareCard from '@/components/SoftwareCard';
+import TrendingPanel from '@/components/TrendingPanel';
 
-export default function Home() {
+export default function HomePage() {
+  const featured = mockSoftware.filter((s) => s.featured);
+  const recent = mockSoftware;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="flex">
+      {/* Main Content */}
+      <div className="flex-1 max-w-4xl p-6">
+        {/* Hero Section */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-text-primary mb-2">
+            OwenFX <span className="text-text-secondary font-normal">发现精选软件</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-sm text-text-secondary">
+            浏览我们精选的免费和开源软件集合，找到提升效率的最佳工具。
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Featured */}
+        {featured.length > 0 && (
+          <section className="mb-8">
+            <h2 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+              </svg>
+              精选推荐
+            </h2>
+            <div className="space-y-3">
+              {featured.map((software) => (
+                <SoftwareCard key={software.id} software={software} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* All Software */}
+        <section>
+          <h2 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
+            <svg className="w-4 h-4 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+            最新更新
+          </h2>
+          <div className="space-y-3">
+            {recent.map((software) => (
+              <SoftwareCard key={software.id} software={software} />
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {/* Right Panel */}
+      <div className="w-72 shrink-0 p-6 pl-2 hidden xl:block">
+        <div className="sticky top-20">
+          <TrendingPanel tags={allTags} categories={mockCategories} />
         </div>
-      </main>
+      </div>
     </div>
   );
 }
