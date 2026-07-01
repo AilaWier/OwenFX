@@ -45,7 +45,7 @@ export default function ArticleDetailPage() {
         </div>
         <div className="flex flex-wrap gap-2 mb-8">
           {article.tags.map(t => (
-            <span key={t} className="px-3 py-1 text-xs rounded-full" style={{background:'var(--bg-tertiary)', color:'var(--text-secondary)'}}>#{t}</span>
+                <span key={t} className="px-3 py-1 text-xs rounded-full inline-flex items-center gap-1" style={{background:'var(--bg-tertiary)', color:'var(--text-secondary)'}}><span className="inline-block w-1.5 h-1.5 rounded-full" style={{backgroundColor: article.category === 'Tool Review' ? '#6366f1' : article.category === 'Tutorial' ? '#f59e0b' : article.category === 'Dev Life' ? '#10b981' : '#6366f1'}}></span>{t}</span>
           ))}
         </div>
       </article>

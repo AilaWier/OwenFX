@@ -1,4 +1,4 @@
-﻿import { mockSoftware } from '@/lib/mock';
+import { mockSoftware, categoryColors } from '@/lib/mock';
 import Link from 'next/link';
 import DownloadButton from '@/components/DownloadButton';
 
@@ -34,7 +34,7 @@ export default async function SoftwareDetailPage({ params }: { params: Promise<{
         <p className="text-sm mb-4 leading-relaxed" style={{color:'var(--text-secondary)'}}>{item.description}</p>
         
         <div className="flex flex-wrap gap-2 mb-4">
-          {item.tags.map(t => <span key={t} className="px-2 py-0.5 text-xs rounded-full" style={{background:'var(--bg-tertiary)', color:'var(--text-secondary)'}}>{t}</span>)}
+           {item.tags.map(t => <span key={t} className="px-2 py-0.5 text-xs rounded-full" style={{background:'var(--bg-tertiary)', color:'var(--text-secondary)'}}>{t}</span>)}
         </div>
 
         <div className="flex flex-wrap gap-4 text-sm mb-6" style={{color:'var(--text-tertiary)'}}>
@@ -76,7 +76,6 @@ export default async function SoftwareDetailPage({ params }: { params: Promise<{
         </div>
       </div>
 
-      </div>
 
       {/* Related */}
       <div className="rounded-xl p-6" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>

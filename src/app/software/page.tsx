@@ -20,7 +20,7 @@ export default async function SoftwarePage() {
               <span className="shrink-0 ml-2 px-2 py-0.5 text-[10px] font-semibold rounded-full inline-flex items-center gap-1" style={{background:'var(--accent-bg)', color:'var(--accent)'}}><span className="inline-block w-1.5 h-1.5 rounded-full" style={{backgroundColor: categoryColors[s.category]}}></span>{s.category}</span>
             </div>
             <p className="text-sm mb-3 line-clamp-2" style={{color:'var(--text-secondary)'}}>{s.description}</p>
-            <div className="flex flex-wrap gap-1.5 mb-3">{s.tags.slice(0,3).map(t => (<span key={t} className="px-2 py-0.5 text-xs rounded-full" style={{background:'var(--accent-bg)', color:'var(--accent)'}}>{t}</span>))}</div>
+             <div className="flex flex-wrap gap-1.5 mb-3">{s.tags.slice(0,3).map(t => (<span key={t} className="px-2 py-0.5 text-xs rounded-full" style={{background:'var(--accent-bg)', color:'var(--accent)'}}>{t}</span>))}</div>
             <span className="px-2 py-0.5 text-xs rounded-full" style={{background:'var(--accent-bg)',color:'var(--success)'}}>免费下载</span>
           </Link>
         ))}
