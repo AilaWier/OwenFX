@@ -1,89 +1,66 @@
-ï»¿# OwenFX â€” ç²¾é€‰è½¯ä»¶èµ„æºç«™
+# OwenFX ¡ª ¾«Ñ¡Èí¼ş×ÊÔ´Õ¾
 
-> ä¸€ä¸ª GitHub Explore é£æ ¼çš„å¼€æºè½¯ä»¶èµ„æºåˆ†äº«ç«™
+> Ò»¸ö GitHub Explore ·ç¸ñµÄ¿ªÔ´Èí¼ş×ÊÔ´·ÖÏíÕ¾
 
-## æŠ€æœ¯æ ˆ
+## ¼¼ÊõÕ»
 
-| å±‚çº§ | æŠ€æœ¯ |
+| ²ã¼¶ | ¼¼Êõ |
 |------|------|
-| æ¡†æ¶ | Next.js 16 + TypeScript |
-| æ ·å¼ | Tailwind CSS 4 + GitHub Dark ä¸»é¢˜ |
-| å†…å®¹ | Notion API (CMS) |
-| éƒ¨ç½² | Vercel |
-| UIé£æ ¼ | GitHub Explore + æ¯›ç»ç’ƒæ··åˆ |
+| ¿ò¼Ü | Next.js 16 + TypeScript |
+| ÑùÊ½ | Tailwind CSS 4 + GitHub Dark Ö÷Ìâ |
+| Êı¾İ | Mock Êı¾İ£¨¾²Ì¬£© |
+| ²¿Êğ | Vercel |
+| UI·ç¸ñ | GitHub Explore + Ã«²£Á§»ìºÏ |
 
-## é¡¹ç›®ç»“æ„
+## ÏîÄ¿½á¹¹
 
 `
 src/
   app/
-    globals.css       # å…¨å±€æ ·å¼ (GitHub Dark + æ¯›ç»ç’ƒ)
-    layout.tsx        # æ ¹å¸ƒå±€ (Navbar + Sidebar)
-    page.tsx          # é¦–é¡µ (Software Feed)
+    globals.css       # È«¾ÖÑùÊ½ (GitHub Dark + Ã«²£Á§)
+    layout.tsx        # ¸ù²¼¾Ö (Navbar + Sidebar)
+    page.tsx          # Ê×Ò³ (Software Feed)
   components/
-    Navbar.tsx        # é¡¶éƒ¨æ¯›ç»ç’ƒå¯¼èˆªæ 
-    Sidebar.tsx       # å·¦ä¾§å›ºå®šä¾§æ 
-    SoftwareCard.tsx  # è½¯ä»¶å¡ç‰‡ (GitHub Repo é£æ ¼)
-    TrendingPanel.tsx # å³ä¾§çƒ­é—¨æ ‡ç­¾/åˆ†ç±»é¢æ¿
+    Navbar.tsx        # ¶¥²¿Ã«²£Á§µ¼º½À¸
+    Sidebar.tsx       # ×ó²à¹Ì¶¨²àÀ¸
+    SoftwareCard.tsx  # Èí¼ş¿¨Æ¬ (GitHub Repo ·ç¸ñ)
+    TrendingPanel.tsx # ÓÒ²àÈÈÃÅ±êÇ©/·ÖÀàÃæ°å
   lib/
-    types.ts          # Software/Category ç±»å‹å®šä¹‰
-    notion.ts         # Notion API æ•°æ®è·å–
-    mock.ts           # ç¤ºä¾‹ Mock æ•°æ® (fallback)
-    environment.d.ts  # ç¯å¢ƒå˜é‡ç±»å‹å£°æ˜
+    types.ts          # Software/Category ÀàĞÍ¶¨Òå
+    mock.ts           # Ê¾Àı Mock Êı¾İ (fallback)
+    environment.d.ts  # »·¾³±äÁ¿ÀàĞÍÉùÃ÷
 `
 
-## æœ¬åœ°è¿è¡Œ
+## ±¾µØÔËĞĞ
 
-1. å®‰è£…ä¾èµ–
+1. °²×°ÒÀÀµ
    npm install
-
-2. é…ç½®ç¯å¢ƒå˜é‡
-   å¤åˆ¶ .env.example ä¸º .env.local
-   å¡«å…¥ NOTION_TOKEN å’Œ NOTION_DATABASE_ID
-
-3. å¯åŠ¨å¼€å‘æœåŠ¡å™¨
+2. ÅäÖÃ»·¾³±äÁ¿\n
+3. Æô¶¯¿ª·¢·şÎñÆ÷
    npm run dev
-   è®¿é—® http://localhost:3000
+   ·ÃÎÊ http://localhost:3000
 
-## éƒ¨ç½²åˆ° Vercel
+## ²¿Êğµ½ Vercel
 
-1. Push åˆ° GitHub
+1. Push µ½ GitHub
    git add .
    git commit -m "deploy OwenFX"
    git push
 
-2. åœ¨ Vercel å¯¼å…¥é¡¹ç›®
-   è®¿é—® vercel.com
+2. ÔÚ Vercel µ¼ÈëÏîÄ¿
+   ·ÃÎÊ vercel.com
    Import langyuso/OwenFX
    Framework: Next.js
 
-3. æ·»åŠ ç¯å¢ƒå˜é‡
-   NOTION_TOKEN
-   NOTION_DATABASE_ID
 
 4. Deploy
 
-## è®¾è®¡ç³»ç»Ÿ
+## Éè¼ÆÏµÍ³
 
-èƒŒæ™¯: #0d1117 (GitHub Dark)
-å¡ç‰‡: #161b22
-è¾¹æ¡†: #30363d
-æ–‡å­—: #c9d1d9
-å¼ºè°ƒè‰²: #58a6ff
-æˆåŠŸ: #3fb950
+±³¾°: #0d1117 (GitHub Dark)
+¿¨Æ¬: #161b22
+±ß¿ò: #30363d
+ÎÄ×Ö: #c9d1d9
+Ç¿µ÷É«: #58a6ff
+³É¹¦: #3fb950
 
-## Notion æ•°æ®åº“ç»“æ„
-
-| å­—æ®µ | ç±»å‹ | è¯´æ˜ |
-|------|------|------|
-| Name | Title | è½¯ä»¶åç§° |
-| Description | Rich Text | ç®€ä»‹ |
-| Category | Select | åˆ†ç±» |
-| Tags | Multi-select | æ ‡ç­¾ |
-| DownloadUrl | URL | ä¸‹è½½é“¾æ¥ |
-| UpdatedAt | Date | æ›´æ–°æ—¶é—´ |
-| Featured | Checkbox | æ˜¯å¦ç²¾é€‰ |
-| Image | URL | è½¯ä»¶å›¾æ ‡ |
-| Version | Rich Text | ç‰ˆæœ¬å· |
-| Size | Rich Text | æ–‡ä»¶å¤§å° |
-| Platform | Select | æ”¯æŒå¹³å° |

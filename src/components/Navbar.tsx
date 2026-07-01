@@ -1,65 +1,104 @@
-﻿'use client';
-
+'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const navLinks = [
-  { label: '首页', href: '#' },
-  { label: '探索', href: '#' },
-  { label: '分类', href: '#' },
-  { label: '热门', href: '#' },
+  { label: '首页', href: '/' },
+  { label: '文章', href: '/articles' },
+  { label: '软件', href: '/software' },
+  { label: '分类', href: '/categories' },
+  { label: '关于', href: '/about' },
+  { label: '联系', href: '/contact' },
 ];
 
 export default function Navbar() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<{ name: string } | null>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handler);
+    return () => window.removeEventListener('scroll', handler);
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/auth/user')
+      .then(r => r.json())
+      .then(d => { if (d.user) setUser(d.user); })
+      .catch(() => {});
+  }, []);
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    const close = () => setUserMenuOpen(false);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [userMenuOpen]);
 
   return (
-    <header className="glass fixed top-0 left-0 right-0 z-50 h-14 px-4 flex items-center gap-4">
-      {/* Logo */}
-      <Link href="/" className="flex items-center gap-2 shrink-0">
-        <span className="text-xl font-bold text-accent tracking-tight">OwenFX</span>
-      </Link>
-
-      {/* Nav Links */}
-      <nav className="hidden md:flex items-center gap-1 ml-4">
-        {navLinks.map((link) => (
-          <Link
-            key={link.label}
-            href={link.href}
-            className="px-3 py-1.5 text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-md transition-colors"
-          >
-            {link.label}
+    <div className={"glass-nav fixed top-0 left-0 right-0 z-50 flex flex-col " + (scrolled ? "shadow-sm" : "")}>
+      <header className="h-14 flex items-center">
+        <div className="w-full max-w-6xl mx-auto px-4 md:px-6 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <span className="text-lg font-bold tracking-tight text-[var(--accent)]">OwenFX</span>
           </Link>
-        ))}
-      </nav>
-
-      {/* Search */}
-      <div className="flex-1 max-w-md mx-auto">
-        <div className="relative">
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            placeholder="搜索软件..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-1.5 text-sm bg-[#21262d] border border-border-color rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
-          />
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map(l => (
+              <Link key={l.href} href={l.href}
+                className="px-3 py-1.5 text-sm rounded-full transition-all duration-200 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            {user ? (
+              <div className="relative">
+                <button onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200 hover:opacity-80"
+                  style={{ background: 'var(--accent)', color: '#fff' }}>
+                  {user.name.charAt(0).toUpperCase()}
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-40 rounded-xl p-2 shadow-lg backdrop-blur-xl"
+                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+                    onClick={() => setUserMenuOpen(false)}>
+                    <Link href="/profile" className="block px-3 py-2 text-sm rounded-lg transition-all text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">个人中心</Link>
+                    <form action="/auth/logout" method="POST">
+                      <button type="submit" className="w-full text-left px-3 py-2 text-sm rounded-lg transition-all text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--danger)]">退出登录</button>
+                    </form>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link href="/auth/login" className="uiverse-btn uiverse-btn-primary !py-1.5 !px-4 text-sm">登录</Link>
+            )}
+            <button className={"md:hidden w-9 h-9 flex items-center justify-center rounded-lg transition-all " + (menuOpen ? "bg-[var(--bg-tertiary)]" : "")}
+              style={{ color: "var(--text-secondary)" }}
+              onClick={() => setMenuOpen(!menuOpen)}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                {menuOpen ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></> : <><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>}
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* Profile */}
-      <div className="flex items-center gap-3">
-        <button className="w-7 h-7 rounded-full bg-accent/20 text-accent flex items-center justify-center text-xs font-semibold hover:bg-accent/30 transition-colors">
-          O
-        </button>
-      </div>
-    </header>
+      </header>
+      {menuOpen && (
+        <div className="md:hidden animate-fade-in border-t border-[var(--border-color)] shadow-lg">
+          <nav className="flex flex-col p-4 gap-1">
+            {navLinks.map(l => (
+              <Link key={l.href} href={l.href} onClick={() => setMenuOpen(false)}
+                className="px-4 py-2.5 text-sm rounded-lg transition-all text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      )}
+    </div>
   );
 }
