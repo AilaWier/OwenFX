@@ -1,4 +1,4 @@
-import { mockSoftware } from '@/lib/mock';
+﻿import { mockSoftware } from '@/lib/mock';
 import Link from 'next/link';
 import DownloadButton from '@/components/DownloadButton';
 
@@ -10,13 +10,19 @@ export default async function SoftwareDetailPage({ params }: { params: Promise<{
   if (!item) return (
     <div className="px-6 py-16 text-center">
       <h2 className="text-xl font-semibold mb-3">软件未找到</h2>
-      <Link href="/software" className="text-sm" style={{color:'var(--accent)'}}>← 返回软件库</Link>
+      <Link href="/software" className="text-sm inline-flex items-center gap-1" style={{color:'var(--accent)'}}>
+        返回软件库
+        <span className="shrink-0 text-xs" style={{color:'var(--text-secondary)'}}>&gt;&gt;&gt;</span>
+      </Link>
     </div>
   );
 
   return (
     <div className="animate-fade-in px-6 py-8 max-w-3xl mx-auto">
-      <Link href="/software" className="text-sm inline-flex items-center gap-1 mb-6" style={{color:'var(--accent)'}}>← 返回软件库</Link>
+      <Link href="/software" className="text-sm inline-flex items-center gap-1 mb-6" style={{color:'var(--accent)'}}>
+        返回软件库
+        <span className="shrink-0 text-xs" style={{color:'var(--text-secondary)'}}>&gt;&gt;&gt;</span>
+      </Link>
       
       <div className="rounded-xl p-6 mb-6" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="flex items-start justify-between mb-4">
@@ -40,8 +46,10 @@ export default async function SoftwareDetailPage({ params }: { params: Promise<{
 
         <DownloadButton downloadUrl={item.downloadUrl} />
 
-        {/* 赞赏支持 */}
-      <div className="rounded-xl p-4 sm:p-6 mb-6 sm:mb-8" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+      </div>
+
+       {/* 赞赏支持 */}
+      <div className="rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 mt-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <p className="text-sm font-medium mb-3" style={{color:'var(--text-tertiary)'}}>赞赏支持</p>
         <div className="flex flex-nowrap items-center gap-1 sm:gap-2">
           <button className="shrink-0 px-2 sm:px-3 py-1.5 text-xs rounded-full transition-all duration-200 cursor-pointer flex items-center gap-1"
