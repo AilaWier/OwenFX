@@ -94,7 +94,7 @@ export default function ArticleDetailPage() {
               style={{ background: 'var(--input-bg)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
               onFocus={e => e.target.style.borderColor = 'var(--accent)'}
               onBlur={e => e.target.style.borderColor = 'var(--border-color)'} />
-            <button onClick={addComment} className="btn-apple btn-apple-primary text-sm !py-2 !px-5">发表评论</button>
+            <button onClick={addComment} className="w-full text-sm p-2.5 rounded-lg outline-none transition-all cursor-pointer" style={{ background: 'var(--accent)', color: '#fff', border: '1px solid var(--border-color)' }}>发表评论</button>
           </div>
         </div>
         {comments.length === 0 ? (
