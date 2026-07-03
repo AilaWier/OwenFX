@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from 'next/server'
+﻿import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 export async function POST(request: NextRequest) {
@@ -8,6 +8,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '请填写所有字段' }, { status: 400 })
     }
 
+    // Store cookies set during auth, then apply them to the final response
+    let pendingCookies: { name: string; value: string; options?: Record<string, unknown> }[] = []
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -15,7 +18,7 @@ export async function POST(request: NextRequest) {
         cookies: {
           getAll() { return request.cookies.getAll() },
           setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
-            cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+            pendingCookies = cookiesToSet
           },
         },
       }
@@ -26,10 +29,18 @@ export async function POST(request: NextRequest) {
 
     const { data: profile } = await supabase.from('profiles').select('display_name').eq('id', data.user.id).single()
 
-    return NextResponse.json({
+    // Build final response with cookies
+    const response = NextResponse.json({
       success: true,
       user: { id: data.user.id, email: data.user.email, name: profile?.display_name || email.split('@')[0] }
     })
+
+    // Apply auth cookies to the response
+    pendingCookies.forEach(({ name, value, options }) => {
+      response.cookies.set(name, value, options)
+    })
+
+    return response
   } catch (err) {
     console.error('Login error:', err)
     return NextResponse.json({ error: '服务器错误' }, { status: 500 })
