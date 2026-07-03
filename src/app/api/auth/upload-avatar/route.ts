@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
@@ -54,7 +54,9 @@ export async function POST(request: Request) {
       ContentType: file.type,
     }))
 
-    const publicUrl = `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${key}`
+    // Trim base URL to avoid trailing space issues
+    const baseUrl = (process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '').trim()
+    const publicUrl = `${baseUrl}/${key}`
 
     // Update profiles table
     const { error: upsertError } = await supabase
