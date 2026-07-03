@@ -1,6 +1,7 @@
 ﻿'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,10 +13,10 @@ export default function LoginPage() {
     e.preventDefault();
     setStatus('loading');
     try {
-      const r = await fetch('/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password}) });
-      if (r.ok) { window.location.href = '/'; return; }
-      const d = await r.json();
-      setErrorMsg(d.error || '登录失败');
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (!error) { window.location.href = '/'; return; }
+      setErrorMsg('邮箱或密码错误');
       setStatus('error');
     } catch { setErrorMsg('网络错误'); setStatus('error'); }
   };
