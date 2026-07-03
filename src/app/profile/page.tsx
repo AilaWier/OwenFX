@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -71,7 +71,7 @@ export default function ProfilePage() {
       const res = await fetch('/api/auth/upload-avatar', { method: 'POST', body: formData })
       const data = await res.json()
       if (data.url) {
-        setProfile(prev => ({ ...prev, avatar_url: data.url }))
+        setProfile(prev => ({ ...prev, avatar_url: data.url + '?t=' + Date.now() }))
       }
     } catch (err) {
       console.error('Upload failed:', err)
