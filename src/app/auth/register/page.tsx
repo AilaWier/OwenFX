@@ -14,7 +14,7 @@ export default function RegisterPage() {
     setStatus('loading');
     try {
       const r = await fetch('/api/auth/register', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password,name}) });
-      if (r.ok) { window.location.href = '/auth/login'; return; }
+      if (r.ok) { setStatus('success'); return; }
       const d = await r.json();
       setErrorMsg(d.error || '注册失败');
       setStatus('error');
@@ -41,15 +41,30 @@ export default function RegisterPage() {
         <div className="rounded-2xl p-8" style={{ background:'var(--bg-card)', border:'1px solid var(--border-color)' }}>
           <h1 className="text-2xl font-bold mb-1">创建账号</h1>
           <p className="text-sm mb-6" style={{color:'var(--text-secondary)'}}>加入 OwenFX 社区</p>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input type="text" placeholder="用户名" value={name} onChange={e => setName(e.target.value)} required className="glass-input w-full rounded-full px-4" />
-            <input type="email" placeholder="邮箱" value={email} onChange={e => setEmail(e.target.value)} required className="glass-input w-full rounded-full px-4" />
-            <input type="password" placeholder="密码 (至少6位)" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="glass-input w-full rounded-full px-4" />
-            {status === 'error' && <p className="text-xs text-center" style={{color:'var(--danger)'}}>{errorMsg}</p>}
-            <button type="submit" disabled={status === 'loading'} className="btn-apple btn-apple-primary w-full justify-center !py-3 rounded-full">
-              {status === 'loading' ? '注册中...' : '注册'}
-            </button>
-          </form>
+          
+          {status === 'success' ? (
+            <div className="text-center space-y-4">
+              <div className="text-4xl">📧</div>
+              <p className="text-sm font-medium" style={{color:'var(--text-primary)'}}>注册成功！</p>
+              <p className="text-xs" style={{color:'var(--text-secondary)'}}>
+                确认邮件已发送到 <strong>{email}</strong>，请查收并点击链接确认。
+              </p>
+              <p className="text-xs" style={{color:'var(--text-tertiary)'}}>确认成功后即可登录</p>
+              <Link href="/auth/login" className="inline-block btn-apple btn-apple-primary !py-2.5 !px-6 rounded-full text-sm">
+                前往登录
+              </Link>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input type="text" placeholder="用户名" value={name} onChange={e => setName(e.target.value)} required className="glass-input w-full rounded-full px-4" />
+              <input type="email" placeholder="邮箱" value={email} onChange={e => setEmail(e.target.value)} required className="glass-input w-full rounded-full px-4" />
+              <input type="password" placeholder="密码 (至少6位)" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="glass-input w-full rounded-full px-4" />
+              {status === 'error' && <p className="text-xs text-center" style={{color:'var(--danger)'}}>{errorMsg}</p>}
+              <button type="submit" disabled={status === 'loading'} className="btn-apple btn-apple-primary w-full justify-center !py-3 rounded-full">
+                {status === 'loading' ? '注册中...' : '注册'}
+              </button>
+            </form>
+          )}
           <p className="text-xs text-center mt-4" style={{color:'var(--text-tertiary)'}}>已有账号？<Link href="/auth/login" style={{color:'var(--accent)'}}>登录</Link></p>
         </div>
       </div>
