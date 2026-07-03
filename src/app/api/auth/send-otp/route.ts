@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import nodemailer from 'nodemailer'
 
 export async function POST(request: Request) {
   try {
@@ -20,9 +21,33 @@ export async function POST(request: Request) {
 
     if (error) return NextResponse.json({ error: '发送失败' }, { status: 500 })
 
-    console.log('Verification code for', email, ':', code)
-    return NextResponse.json({ success: true, message: '验证码已发送' })
-  } catch {
-    return NextResponse.json({ error: '服务器错误' }, { status: 500 })
+    // Send email via Gmail SMTP
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
+
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to: email,
+      subject: 'OwenFX 注册验证码',
+      html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto">
+        <h2>OwenFX 注册验证</h2>
+        <p>你的验证码是：</p>
+        <div style="font-size:32px;letter-spacing:8px;font-weight:bold;background:#f5f5f5;padding:16px;text-align:center;border-radius:8px;margin:16px 0">${code}</div>
+        <p style="color:#666">验证码有效期为10分钟，请尽快使用。</p>
+        <p style="color:#999;font-size:12px">如果这不是你本人操作，请忽略此邮件。</p>
+      </div>`,
+    })
+
+    return NextResponse.json({ success: true, message: '验证码已发送到邮箱' })
+  } catch (err: any) {
+    console.error('Send OTP error:', err)
+    return NextResponse.json({ error: '验证码发送失败' }, { status: 500 })
   }
 }
