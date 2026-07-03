@@ -29,12 +29,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '注册失败: ' + error.message }, { status: 500 })
     }
 
-    // Generate and send verification code
+    // Create admin client for privileged operations
     const adminClient = createSupabaseClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
+    // Auto-confirm user so they can log in immediately
+    if (data.user) {
+      try {
+        await adminClient.auth.admin.updateUserById(data.user.id, {
+          email_confirm: true,
+        })
+      } catch (e) {
+        // Non-critical
+      }
+    }
+
+    // Generate and store verification code
     const code = String(Math.floor(100000 + Math.random() * 900000))
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
 
@@ -42,7 +54,7 @@ export async function POST(request: Request) {
       email, code, used: false, expires_at: expiresAt, created_at: new Date().toISOString()
     })
 
-    // Send email
+    // Send email with verification code
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: Number(process.env.SMTP_PORT) || 587,
