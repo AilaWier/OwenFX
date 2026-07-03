@@ -14,12 +14,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '密码至少6位' }, { status: 400 })
     }
 
-    // Create user
-    const supabase = await createClient()
-    const { data, error } = await supabase.auth.signUp({
+    // Admin client for privileged operations
+    const adminClient = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    // Create user directly with email_confirm=true, bypasses Supabase confirm email setting
+    const { data, error } = await adminClient.auth.admin.createUser({
       email,
       password,
-      options: { data: { display_name: name } },
+      email_confirm: true,
+      user_metadata: { display_name: name },
     })
 
     if (error) {
@@ -29,24 +35,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '注册失败: ' + error.message }, { status: 500 })
     }
 
-    // Create admin client for privileged operations
-    const adminClient = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-
-    // Auto-confirm user so they can log in immediately
-    if (data.user) {
-      try {
-        await adminClient.auth.admin.updateUserById(data.user.id, {
-          email_confirm: true,
-        })
-      } catch (e) {
-        // Non-critical
-      }
-    }
-
-    // Generate and store verification code
+    // Generate and send verification code
     const code = String(Math.floor(100000 + Math.random() * 900000))
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
 
