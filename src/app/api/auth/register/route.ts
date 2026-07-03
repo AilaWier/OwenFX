@@ -19,7 +19,10 @@ export async function POST(request: Request) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: name } },
+      options: {
+        data: { display_name: name },
+        emailRedirectTo: 'https://www.owenfx.dpdns.org/auth/callback',
+      },
     })
 
     if (error) {
