@@ -19,6 +19,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -86,6 +87,13 @@ export default function ProfilePage() {
     router.refresh()
   }
 
+  useEffect(() => {
+    if (!showMenu) return;
+    const close = () => setShowMenu(false);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [showMenu]);
+
   if (loading) return (
     <div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center">
       <p style={{color:'var(--text-secondary)'}}>加载中...</p>
@@ -96,7 +104,25 @@ export default function ProfilePage() {
     <div className="min-h-[calc(100vh-3.5rem)] py-8">
       <div className="max-w-lg mx-auto animate-fade-in">
         <div className="rounded-2xl p-8" style={{ background:'var(--bg-card)', border:'1px solid var(--border-color)' }}>
-          <h1 className="text-2xl font-bold mb-6">个人资料</h1>
+          <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-bold">个人资料</h1>
+              <div className="relative">
+                <button onClick={() => setShowMenu(!showMenu)}
+                  className="text-2xl px-1 leading-none opacity-40 hover:opacity-80 transition-opacity">
+                  ⋮
+                </button>
+                {showMenu && (
+                  <div className="absolute right-0 top-full mt-1 w-44 rounded-xl p-2 shadow-lg backdrop-blur-xl z-10"
+                    style={{ background:'var(--bg-card)', border:'1px solid var(--border-color)' }}
+                    onClick={() => setShowMenu(false)}>
+                    <button onClick={handleLogout}
+                      className="w-full text-left px-3 py-2 text-sm rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
+                      退出登录
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
 
           {/* Avatar */}
           <div className="flex flex-col items-center mb-6">
@@ -146,10 +172,7 @@ export default function ProfilePage() {
               className="uiverse-btn uiverse-btn-primary !py-2 !px-6 text-sm">
               {saving ? '保存中...' : saved ? '已保存 ✓' : '保存'}
             </button>
-            <button onClick={handleLogout}
-              className="uiverse-btn uiverse-btn-ghost !py-2 !px-4 text-sm">
-              退出登录
-            </button>
+
           </div>
         </div>
       </div>
