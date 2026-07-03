@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
@@ -20,6 +20,11 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const nicknameInputRef = useRef<HTMLInputElement>(null)
+  const [editingEmail, setEditingEmail] = useState(false)
+  const [newEmail, setNewEmail] = useState('')
+  const [emailSaving, setEmailSaving] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -115,6 +120,19 @@ export default function ProfilePage() {
                   <div className="absolute right-0 top-full mt-1 w-44 rounded-xl p-2 shadow-lg backdrop-blur-xl z-10"
                     style={{ background:'var(--bg-card)', border:'1px solid var(--border-color)' }}
                     onClick={() => setShowMenu(false)}>
+                    <button onClick={() => fileInputRef.current?.click()}
+                      className="w-full text-left px-3 py-2 text-sm rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
+                      更换头像
+                    </button>
+                    <button onClick={() => nicknameInputRef.current?.focus()}
+                      className="w-full text-left px-3 py-2 text-sm rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
+                      更换昵称
+                    </button>
+                    <button onClick={() => setEditingEmail(true)}
+                      className="w-full text-left px-3 py-2 text-sm rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
+                      更换邮箱
+                    </button>
+                    <div className="h-px mx-2 my-1" style={{background:"var(--border-color)"}} />
                     <button onClick={handleLogout}
                       className="w-full text-left px-3 py-2 text-sm rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
                       退出登录
@@ -137,10 +155,7 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
-            <label className="uiverse-btn uiverse-btn-ghost text-xs !py-1.5 !px-3 cursor-pointer">
-              {uploading ? '上传中...' : '更换头像'}
-              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
-            </label>
+            <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
           </div>
 
           {/* Email (readonly) */}
@@ -153,7 +168,7 @@ export default function ProfilePage() {
           {/* Display name */}
           <div className="mb-4">
             <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>昵称</label>
-            <input type="text" value={profile.display_name || ''}
+            <input ref={nicknameInputRef} type="text" value={profile.display_name || ''}
               onChange={e => setProfile(p => ({ ...p, display_name: e.target.value }))}
               className="glass-input w-full" placeholder="设置你的昵称" />
           </div>
@@ -165,6 +180,39 @@ export default function ProfilePage() {
               onChange={e => setProfile(p => ({ ...p, bio: e.target.value }))}
               className="glass-input w-full resize-none" rows={3} placeholder="介绍一下自己" />
           </div>
+
+          {/* Email editing */}
+          {editingEmail && (
+            <div className="mb-4 p-4 rounded-xl" style={{background:"var(--bg-tertiary)", border:"1px solid var(--border-color)"}}>
+              <label className="block text-xs font-medium mb-2" style={{color:"var(--text-secondary)"}}>新邮箱地址</label>
+              <div className="flex gap-2">
+                <input type="email" value={newEmail}
+                  onChange={e => setNewEmail(e.target.value)}
+                  className="glass-input flex-1" placeholder="输入新邮箱" />
+                <button onClick={async () => {
+                  if (!newEmail || !user) return
+                  setEmailSaving(true)
+                  const supabase = createClient()
+                  const { error } = await supabase.auth.updateUser({ email: newEmail })
+                  if (error) {
+                    alert('更换失败: ' + error.message)
+                  } else {
+                    alert('验证邮件已发送到新邮箱，请查收确认')
+                    setEditingEmail(false)
+                    setNewEmail('')
+                  }
+                  setEmailSaving(false)
+                }} disabled={emailSaving}
+                  className="uiverse-btn uiverse-btn-primary !py-2 !px-4 text-sm whitespace-nowrap">
+                  {emailSaving ? '发送中...' : '确认'}
+                </button>
+                <button onClick={() => { setEditingEmail(false); setNewEmail('') }}
+                  className="uiverse-btn uiverse-btn-ghost !py-2 !px-4 text-sm whitespace-nowrap">
+                  取消
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex items-center gap-3">
