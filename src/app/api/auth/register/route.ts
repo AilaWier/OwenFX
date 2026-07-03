@@ -1,5 +1,5 @@
 ﻿import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: Request) {
   try {
@@ -12,14 +12,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '密码至少6位' }, { status: 400 })
     }
 
-    const supabase = createAdminClient()
+    const supabase = await createClient()
 
-    // Create user with confirmed email
-    const { data, error } = await supabase.auth.admin.createUser({
+    // signUp creates the user; the DB trigger on_auth_user_created
+    // automatically inserts the profile row
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      email_confirm: true,
-      user_metadata: { display_name: name },
+      options: { data: { display_name: name } },
     })
 
     if (error) {
@@ -27,15 +27,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: '该邮箱已注册' }, { status: 409 })
       }
       return NextResponse.json({ error: '注册失败: ' + error.message }, { status: 500 })
-    }
-
-    // Create profile entry
-    if (data.user) {
-      await supabase.from('profiles').upsert({
-        id: data.user.id,
-        display_name: name,
-        updated_at: new Date().toISOString(),
-      })
     }
 
     return NextResponse.json({ success: true })
