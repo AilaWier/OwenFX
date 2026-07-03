@@ -15,7 +15,7 @@ const navLinks = [
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [user, setUser] = useState<{ name: string; avatar_url: string | null } | null>(null);
+  const [user, setUser] = useState<{ name: string } | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -61,19 +61,9 @@ export default function Navbar() {
                 <button onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200 hover:opacity-80"
                   style={{ background: 'var(--accent)', color: '#fff' }}>
-                  {user.avatar_url ? (
-    <img src={user.avatar_url} className="w-8 h-8 rounded-full object-cover" />
-  ) : (
-    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
-      style={{ background: 'var(--accent)', color: '#fff' }}>
-      {user.name.charAt(0).toUpperCase()}
-    </div>
-  )}
+                  {user.name.charAt(0).toUpperCase()}
                 </button>
-              <button onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="text-xl px-1.5 opacity-50 hover:opacity-100 transition-opacity leading-none">
-                ⋮
-              </button>
+
                 {userMenuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-40 rounded-xl p-2 shadow-lg backdrop-blur-xl"
                     style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
