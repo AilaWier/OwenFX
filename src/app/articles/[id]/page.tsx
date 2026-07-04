@@ -11,6 +11,26 @@ export default function ArticleDetailPage() {
   const [cmtName, setCmtName] = useState('');
   const [cmtText, setCmtText] = useState('');
 
+  function renderContent(content: string) {
+    const lines = content.split('\n');
+    let num = 0;
+    return lines.map((line, i) => {
+      const trimmed = line.trim();
+      if (!trimmed) return <p key={i} className="mb-1">&nbsp;</p>;
+      if (trimmed.startsWith('## ')) {
+        num++;
+        const text = trimmed.replace(/^##\s*\d*\.?\s*/, '');
+        return (
+          <p key={i} className="flex items-start gap-2 mb-3 font-semibold leading-relaxed">
+            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-bold shrink-0" style={{ background: '#3b82f620', color: '#3b82f6' }}>{num}</span>
+            <span>{text}</span>
+          </p>
+        );
+      }
+      return <p key={i} className="mb-2 leading-relaxed" style={{color:'var(--text-secondary)'}}>{line}</p>;
+    });
+  }
+
   const addComment = () => {
     if (!cmtName.trim() || !cmtText.trim()) return;
     setComments([...comments, { name: cmtName, text: cmtText, date: new Date().toLocaleDateString('zh-CN') }]);
@@ -20,18 +40,18 @@ export default function ArticleDetailPage() {
   if (!article) return (
     <div className="px-6 py-16 text-center">
       <h2 className="text-xl font-semibold mb-3">文章未找到</h2>
-      <Link href="/articles" className="text-sm inline-flex items-center gap-1" style={{color:'var(--accent)'}}>
+      <Link href="/articles" className="text-sm inline-flex items-center gap-2" style={{color:'var(--accent)'}}>
         返回
-        <span className="shrink-0 text-xs" style={{color:'var(--text-secondary)'}}>&gt;&gt;&gt;</span>
+        <span className="inline-flex items-center gap-0.5"><span style={{color:'#ff5f57'}}>&gt;</span><span style={{color:'#ffbd2e'}}>&gt;</span><span style={{color:'#28c840'}}>&gt;</span></span>
       </Link>
     </div>
   );
 
   return (
     <div className="animate-fade-in px-6 py-8 max-w-3xl mx-auto">
-          <Link href="/articles" className="text-sm inline-flex items-center gap-1 mb-6" style={{color:'var(--accent)'}}>
+          <Link href="/articles" className="text-sm inline-flex items-center gap-2 mb-6" style={{color:'var(--accent)'}}>
             返回文章列表
-        <span className="shrink-0 text-xs" style={{color:'var(--text-secondary)'}}>&gt;&gt;&gt;</span>
+        <span className="inline-flex items-center gap-0.5"><span style={{color:'#ff5f57'}}>&gt;</span><span style={{color:'#ffbd2e'}}>&gt;</span><span style={{color:'#28c840'}}>&gt;</span></span>
           </Link>
       <article>
         <div className="flex flex-nowrap items-center gap-2 mb-3">
@@ -39,13 +59,17 @@ export default function ArticleDetailPage() {
           <span className="text-xs" style={{color:'var(--text-tertiary)'}}>{article.readTime}</span>
         </div>
         <h1 className="text-2xl md:text-3xl font-bold mb-3">{article.title}</h1>
-        <p className="text-sm mb-6" style={{color:'var(--text-secondary)'}}>{article.author} · {article.createdAt}</p>
-        <div className="rounded-xl p-6 mb-8 leading-relaxed text-sm whitespace-pre-line" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-          {article.content}
+        <div className="flex items-center gap-2 text-sm mb-6" style={{color:'var(--text-secondary)'}}>
+          <span className="font-semibold">OWEN</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{background:'var(--accent-bg)', color:'var(--accent)'}}>站长</span>
+          <span>· {article.createdAt}</span>
+        </div>
+        <div className="rounded-xl p-6 mb-8 leading-relaxed text-sm " style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          {renderContent(article.content)}
         </div>
         <div className="flex flex-wrap gap-2 mb-8">
           {article.tags.map(t => (
-                <span key={t} className="px-3 py-1 text-xs rounded-full inline-flex items-center gap-1" style={{background:'var(--bg-tertiary)', color:'var(--text-secondary)'}}><span className="inline-block w-1.5 h-1.5 rounded-full" style={{backgroundColor: article.category === 'Tool Review' ? '#6366f1' : article.category === 'Tutorial' ? '#f59e0b' : article.category === 'Dev Life' ? '#10b981' : '#6366f1'}}></span>{t}</span>
+                <span key={t} className="px-3 py-1 text-xs rounded-full inline-flex items-center gap-1" style={{background:'var(--bg-tertiary)', color:'var(--text-secondary)'}}><span className="inline-block w-1.5 h-1.5 rounded-full" style={{backgroundColor: article.category === '工具评测' ? '#6366f1' : article.category === '教程' ? '#f59e0b' : article.category === '系统技巧' ? '#10b981' : '#6366f1'}}></span>{t}</span>
           ))}
         </div>
       </article>

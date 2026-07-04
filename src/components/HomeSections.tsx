@@ -18,8 +18,8 @@ export default function HomeSections({ articles, featured }: HomeSectionProps) {
     <>
       <section className="pb-14">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg md:text-xl font-semibold">最新文章</h2>
-          <Link href="/articles" className="text-sm" style={{ color: 'var(--accent)' }}>查看全部 →</Link>
+          <h2 className="text-lg md:text-xl font-semibold flex items-center gap-2">最新文章<span className="w-3 h-3 rounded-full" style={{background:'#28c840'}}></span></h2>
+          <Link href="/articles" className="text-sm" style={{ color: 'var(--accent)' }}>查看全部</Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {articles.map((a: any, i: number) => (
@@ -36,8 +36,8 @@ export default function HomeSections({ articles, featured }: HomeSectionProps) {
       {featured.length > 0 && (
         <section className="pb-10">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg md:text-xl font-semibold">精选推荐</h2>
-            <Link href="/software" className="text-sm" style={{ color: 'var(--accent)' }}>查看全部 →</Link>
+            <h2 className="text-lg md:text-xl font-semibold flex items-center gap-2">精选推荐<span className="w-3 h-3 rounded-full" style={{background:'#a855f7'}}></span></h2>
+            <Link href="/software" className="text-sm" style={{ color: 'var(--accent)' }}>查看全部</Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {featured.slice(fp * PAGE_SIZE, (fp + 1) * PAGE_SIZE).map((s: any, i: number) => (
