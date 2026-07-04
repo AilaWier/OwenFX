@@ -12,11 +12,10 @@ const navLinks = [
   { label: '联系', href: '/contact' },
 ];
 
-export default function Navbar() {
+export default function Navbar({ initialUser = null }: { initialUser?: { name: string; avatar_url: string | null } | null }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [user, setUser] = useState<{ name: string } | null>(null);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [user, setUser] = useState<{ name: string; avatar_url: string | null } | null>(initialUser);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -31,13 +30,6 @@ export default function Navbar() {
       .catch(() => {});
   }, []);
 
-  // Close menu on outside click
-  useEffect(() => {
-    if (!userMenuOpen) return;
-    const close = () => setUserMenuOpen(false);
-    document.addEventListener('click', close);
-    return () => document.removeEventListener('click', close);
-  }, [userMenuOpen]);
 
   return (
     <div className={"glass-nav fixed top-0 left-0 right-0 z-50 flex flex-col " + (scrolled ? "shadow-sm" : "")}>
@@ -57,25 +49,11 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             {user ? (
-              <div className="relative">
-                <button onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200 hover:opacity-80"
-                  style={{ background: 'var(--accent)', color: '#fff' }}>
-                  {user.name.charAt(0).toUpperCase()}
-                </button>
-
-                {userMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-40 rounded-xl p-2 shadow-lg backdrop-blur-xl"
-                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
-                    onClick={() => setUserMenuOpen(false)}>
-                    <Link href="/profile" className="block px-3 py-2 text-sm rounded-lg transition-all text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">个人中心</Link>
-                    <form action="/auth/logout" method="POST">
-                      <button type="submit" className="w-full text-left px-3 py-2 text-sm rounded-lg transition-all text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--danger)]">退出登录</button>
-                    </form>
-                  </div>
-                )}
-              </div>
-            ) : (
+              <Link href="/profile"
+                className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold transition-all duration-200 hover:opacity-80"
+                style={{ background: 'var(--accent)', color: '#fff' }}>
+                {user.avatar_url ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" /> : user.name.charAt(0).toUpperCase()}
+              </Link>            ) : (
               <Link href="/auth/login" className="uiverse-btn uiverse-btn-primary !py-1.5 !px-4 text-sm">登录</Link>
             )}
             <button className={"md:hidden w-9 h-9 flex items-center justify-center rounded-lg transition-all " + (menuOpen ? "bg-[var(--bg-tertiary)]" : "")}

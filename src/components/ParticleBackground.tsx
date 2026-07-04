@@ -66,5 +66,5 @@ export default function ParticleBackground() {
     return () => { cancelAnimationFrame(anim); window.removeEventListener('resize', resize); };
   }, []);
 
-  return <canvas ref={ref} className="w-full h-full" />;
+  return <canvas ref={ref} style={{ width: '100%', height: '100%', display: 'block' }} />;
 }

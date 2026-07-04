@@ -12,11 +12,12 @@ export default async function HomePage() {
   const topArticles = mockArticles;
 
   return (
-    <div className="animate-fade-in">
+    <div>
       {/* Hero with heartbeat light orbs */}
-      <div className="w-full h-28 md:h-36 rounded-xl overflow-hidden mb-4" style={{background:'transparent',position:'relative'}}>
-      <ParticleBackground />
-    </div>
+      <div className="particle-wrap">
+        <style>{`.particle-wrap{width:100%;height:112px;border-radius:12px;overflow:hidden;margin-bottom:1rem;background:transparent;position:relative}@media(min-width:768px){.particle-wrap{height:144px}}`}</style>
+        <ParticleBackground />
+      </div>
     <SearchBar />
     <Carousel />
 

@@ -25,6 +25,10 @@ export default function ProfilePage() {
   const [editingEmail, setEditingEmail] = useState(false)
   const [newEmail, setNewEmail] = useState('')
   const [emailSaving, setEmailSaving] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [originalProfile, setOriginalProfile] = useState(null)
+  const [focused, setFocused] = useState(false)
+  const [emailEdit, setEmailEdit] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -85,6 +89,36 @@ export default function ProfilePage() {
     setUploading(false)
   }
 
+  const handleEmailVerify = async () => {
+    if (!newEmail || !user) return
+    setEmailSaving(true)
+    const supabase = createClient()
+    const { error } = await supabase.auth.updateUser({ email: newEmail })
+    if (error) {
+      alert('验证失败: ' + error.message)
+    } else {
+      alert('验证邮件已发送到新邮箱，请查收确认')
+      setEmailEdit(false)
+      setNewEmail('')
+      setEditing(false)
+    }
+    setEmailSaving(false)
+  }
+
+  const handleEdit = () => {
+    setOriginalProfile({ ...profile })
+    setEditing(true)
+    setEmailEdit(false)
+    setFocused(false)
+  }
+
+  const handleCancel = () => {
+    if (originalProfile) setProfile(originalProfile)
+    setEmailEdit(false)
+    setEditing(false)
+    setFocused(false)
+  }
+
   const handleLogout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -109,30 +143,28 @@ export default function ProfilePage() {
     <div className="min-h-[calc(100vh-3.5rem)] py-8">
       <div className="max-w-lg mx-auto animate-fade-in">
         <div className="rounded-2xl p-8" style={{ background:'var(--bg-card)', border:'1px solid var(--border-color)' }}>
-          <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold">个人资料</h1>
-              <div className="relative">
-                <button onClick={() => setShowMenu(!showMenu)}
-                  className="text-2xl px-1 leading-none opacity-40 hover:opacity-80 transition-opacity">
-                  ⋮
-                </button>
+          <div className="flex items-center justify-between mb-6">              <div className="relative">
+                <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => setShowMenu(!showMenu)}>
+                    <span className="w-3 h-3 rounded-full" style={{background:'#ff5f57'}}></span>
+                    <span className="w-3 h-3 rounded-full" style={{background:'#ffbd2e'}}></span>
+                    <span className="w-3 h-3 rounded-full" style={{background:'#28c840'}}></span>
+                  </div>
                 {showMenu && (
                   <div className="absolute right-0 top-full mt-1 w-44 rounded-xl p-2 shadow-lg backdrop-blur-xl z-10"
                     style={{ background:'var(--bg-card)', border:'1px solid var(--border-color)' }}
                     onClick={() => setShowMenu(false)}>
-                    <button onClick={() => fileInputRef.current?.click()}
+                                        <button onClick={() => { setEditing(true); setEmailEdit(false); setFocused(false); }}
                       className="w-full text-left px-3 py-2 text-sm rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
-                      更换头像
+                      更新资料
                     </button>
-                    <button onClick={() => nicknameInputRef.current?.focus()}
+                    <button onClick={() => { setEditing(false); setEmailEdit(false); setFocused(false); alert('密码重置链接已发送到邮箱'); }}
                       className="w-full text-left px-3 py-2 text-sm rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
-                      更换昵称
+                      更改密码
                     </button>
-                    <button onClick={() => setEditingEmail(true)}
+                    <button onClick={() => { setNewEmail(user?.email || ''); setEditing(false); setEmailEdit(true); setFocused(false); }}
                       className="w-full text-left px-3 py-2 text-sm rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
                       更换邮箱
                     </button>
-                    <div className="h-px mx-2 my-1" style={{background:"var(--border-color)"}} />
                     <button onClick={handleLogout}
                       className="w-full text-left px-3 py-2 text-sm rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
                       退出登录
@@ -158,19 +190,23 @@ export default function ProfilePage() {
             <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
           </div>
 
-          {/* Email (readonly) */}
-          <div className="mb-4">
-            <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>邮箱</label>
-            <input type="email" value={user?.email || ''} disabled
-              className="glass-input w-full opacity-60" />
-          </div>
-
           {/* Display name */}
           <div className="mb-4">
             <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>昵称</label>
             <input ref={nicknameInputRef} type="text" value={profile.display_name || ''}
               onChange={e => setProfile(p => ({ ...p, display_name: e.target.value }))}
-              className="glass-input w-full" placeholder="设置你的昵称" />
+              onFocus={() => setFocused(true)}
+              disabled={!editing}
+              className={`glass-input w-full${!editing ? ' opacity-60' : ''}`} style={{ borderRadius: 10, padding: "10px 14px" }} placeholder="设置你的昵称" />
+          </div>
+
+          {/* Email (readonly) */}
+          <div className="mb-4">
+            <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>邮箱</label>
+            <input type="email" value={user?.email || ''} disabled
+              disabled={!emailEdit}
+              onFocus={() => emailEdit && setFocused(true)}
+              className={`glass-input w-full${emailEdit ? '' : ' opacity-60'}`} style={{ borderRadius: 10, padding: "10px 14px" }} />
           </div>
 
           {/* Bio */}
@@ -178,7 +214,9 @@ export default function ProfilePage() {
             <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>个人简介</label>
             <textarea value={profile.bio || ''}
               onChange={e => setProfile(p => ({ ...p, bio: e.target.value }))}
-              className="glass-input w-full resize-none" rows={3} placeholder="介绍一下自己" />
+              onFocus={() => setFocused(true)}
+              disabled={!editing}
+              className={`glass-input w-full resize-none${!editing ? ' opacity-60' : ''}`} style={{ borderRadius: 10, padding: "10px 14px" }} rows={3} placeholder="介绍一下自己" />
           </div>
 
           {/* Email editing */}
@@ -188,7 +226,7 @@ export default function ProfilePage() {
               <div className="flex gap-2">
                 <input type="email" value={newEmail}
                   onChange={e => setNewEmail(e.target.value)}
-                  className="glass-input flex-1" placeholder="输入新邮箱" />
+                  className="glass-input flex-1" style={{ borderRadius: 10, padding: "10px 14px" }} placeholder="输入新邮箱" />
                 <button onClick={async () => {
                   if (!newEmail || !user) return
                   setEmailSaving(true)
@@ -215,13 +253,18 @@ export default function ProfilePage() {
           )}
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
-            <button onClick={handleSave} disabled={saving}
-              className="uiverse-btn uiverse-btn-primary !py-2 !px-6 text-sm">
-              {saving ? '保存中...' : saved ? '已保存 ✓' : '保存'}
-            </button>
-
-          </div>
+                    {(editing || emailEdit) && focused && (
+            <div className="flex gap-3 mt-4 w-full">
+              <button onClick={handleCancel}
+                className="uiverse-btn uiverse-btn-ghost !py-2.5 flex-1 text-sm">
+                取消
+              </button>
+              <button onClick={emailEdit ? handleEmailVerify : handleSave} disabled={emailEdit ? emailSaving : saving}
+                className="uiverse-btn uiverse-btn-primary !py-2.5 flex-1 text-sm">
+                {emailEdit ? (emailSaving ? '发送中...' : '验证') : saving ? '保存中...' : saved ? '已保存 ✓' : '保存'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
