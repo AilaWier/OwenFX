@@ -26,7 +26,7 @@ export default function ProfilePage() {
   const [newEmail, setNewEmail] = useState('')
   const [emailSaving, setEmailSaving] = useState(false)
   const [editing, setEditing] = useState(false)
-  const [originalProfile, setOriginalProfile] = useState(null)
+  const [originalProfile, setOriginalProfile] = useState<Profile | null>(null)
   const [focused, setFocused] = useState(false)
   const [emailEdit, setEmailEdit] = useState(false)
 
@@ -203,8 +203,7 @@ export default function ProfilePage() {
           {/* Email (readonly) */}
           <div className="mb-4">
             <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>邮箱</label>
-            <input type="email" value={user?.email || ''} disabled
-              disabled={!emailEdit}
+            <input type="email" value={user?.email || ''} disabled={!emailEdit}
               onFocus={() => emailEdit && setFocused(true)}
               className={`glass-input w-full${emailEdit ? '' : ' opacity-60'}`} style={{ borderRadius: 10, padding: "10px 14px" }} />
           </div>
