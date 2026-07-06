@@ -941,7 +941,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                   </div>
                 </>
               ) : (
-                <>
+                <div className="drawer-profile-overview">
                   <div className="mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-full bg-[linear-gradient(135deg,#c084fc,#6366f1,#38bdf8)] p-1.5 shadow-[0_0_36px_rgba(129,140,248,0.65)] sm:h-32 sm:w-32">
                     <div className="h-full w-full overflow-hidden rounded-full bg-slate-800">
                       {activeAvatarUrl ? (
@@ -1041,7 +1041,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                   </div>
 
                   <div className="h-4" />
-                </>
+                </div>
               )}
           </aside>
         </div>
