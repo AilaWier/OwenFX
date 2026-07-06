@@ -720,7 +720,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
           <aside className="user-drawer-panel relative z-10 ml-auto flex h-[100dvh] w-[min(92vw,390px)] items-center justify-center overflow-hidden border-l border-white/15 bg-[#050a16]/95 p-3 shadow-[-24px_0_70px_rgba(2,6,23,0.65)] animate-slide-in-right sm:p-4">
             <div ref={drawerCardRef} style={{ transform: `scale(${drawerCardScale})`, transformOrigin: 'center center' }} className="user-drawer-card relative w-full overflow-hidden rounded-[24px] border border-indigo-200/35 bg-[radial-gradient(circle_at_30%_8%,rgba(168,85,247,0.22),transparent_32%),radial-gradient(circle_at_92%_18%,rgba(56,189,248,0.18),transparent_26%),linear-gradient(145deg,rgba(30,41,75,0.86),rgba(6,13,29,0.96))] px-4 pb-4 pt-7 shadow-[0_0_60px_rgba(99,102,241,0.22)] transition-transform duration-150 sm:px-5">
               <button type="button" aria-label="关闭" onClick={() => setDrawerOpen(false)}
-                className="absolute right-5 top-5 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-indigo-200/20 bg-indigo-400/15 text-indigo-200 shadow-[0_0_30px_rgba(129,140,248,0.25)] transition hover:bg-indigo-400/25 hover:text-white">
+                className="drawer-round-action drawer-corner-action absolute right-5 top-5 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-indigo-200/20 bg-indigo-400/15 text-indigo-200 shadow-[0_0_30px_rgba(129,140,248,0.25)] transition hover:bg-indigo-400/25 hover:text-white">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
@@ -730,29 +730,29 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
               {editingSecurity ? (
                 <>
                   <button type="button" aria-label="返回编辑资料" onClick={() => { setEditingSecurity(false); setProfileNotice(null); }}
-                    className="drawer-side-action" title="返回编辑资料">
+                    className="drawer-side-action drawer-round-action drawer-corner-action" title="返回编辑资料">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="m15 18-6-6 6-6" />
                     </svg>
                   </button>
 
                   <div className="mb-4 text-center">
-                    <p className="text-sm font-semibold text-cyan-200">账号安全</p>
-                    <h2 className="mt-1 truncate text-3xl font-bold text-white">邮箱与密码</h2>
+                    <p className="drawer-avatar-flow text-sm font-semibold">账号安全</p>
+                    <h2 className="drawer-avatar-flow mt-1 truncate text-3xl font-bold">邮箱与密码</h2>
                     {user.email && <p className="mt-1 truncate text-xs text-slate-500">{user.email}</p>}
                   </div>
 
                   <div className="space-y-4">
                     <section className="rounded-[20px] border border-white/10 bg-slate-950/25 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                       <div className="mb-3 flex items-center gap-3">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-cyan-200/20 bg-cyan-400/10 text-cyan-200">
+                        <span className="drawer-round-action drawer-security-icon flex h-9 w-9 items-center justify-center rounded-full border border-cyan-200/20 bg-cyan-400/10 text-cyan-200">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <rect width="20" height="16" x="2" y="4" rx="2" />
                             <path d="m22 7-10 6L2 7" />
                           </svg>
                         </span>
                         <div className="min-w-0 text-left">
-                          <h3 className="truncate text-base font-semibold text-white">更换邮箱</h3>
+                          <h3 className="drawer-security-section-title truncate text-base font-semibold">更换邮箱</h3>
                           <p className="truncate text-xs text-slate-400">验证码发送到新邮箱。</p>
                         </div>
                       </div>
@@ -773,7 +773,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                             className={`drawer-profile-input ${emailCode ? 'text-center tracking-[6px]' : ''}`}
                             placeholder="输入验证码" />
                           <button type="button" onClick={handleEmailUpdate} disabled={savingEmail || sendingEmailCode}
-                            className="uiverse-btn uiverse-btn-primary !px-3 !py-2.5 text-xs">
+                            className="uiverse-btn drawer-security-confirm !px-3 !py-2.5 text-xs">
                             {savingEmail ? '确认中' : '确认更换'}
                           </button>
                         </div>
@@ -782,14 +782,14 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
 
                     <section className="rounded-[20px] border border-white/10 bg-slate-950/25 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                       <div className="mb-3 flex items-center gap-3">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-amber-200/20 bg-amber-400/10 text-amber-200">
+                        <span className="drawer-round-action drawer-security-icon flex h-9 w-9 items-center justify-center rounded-full border border-cyan-200/20 bg-cyan-400/10 text-cyan-200">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <rect width="16" height="11" x="4" y="11" rx="2" />
                             <path d="M8 11V8a4 4 0 0 1 8 0v3" />
                           </svg>
                         </span>
                         <div className="min-w-0 text-left">
-                          <h3 className="truncate text-base font-semibold text-white">修改密码</h3>
+                          <h3 className="drawer-security-section-title truncate text-base font-semibold">修改密码</h3>
                           <p className="truncate text-xs text-slate-400">验证码发送到当前邮箱。</p>
                         </div>
                       </div>
@@ -814,7 +814,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                             {sendingPasswordCode ? '发送中' : '发验证码'}
                           </button>
                           <button type="button" onClick={handlePasswordUpdate} disabled={savingPassword || sendingPasswordCode}
-                            className="uiverse-btn uiverse-btn-primary !px-3 !py-2.5 text-xs">
+                            className="uiverse-btn drawer-security-confirm !px-3 !py-2.5 text-xs">
                             {savingPassword ? '修改中' : '确认'}
                           </button>
                         </div>
@@ -831,7 +831,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
               ) : editingProfile ? (
                 <>
                   <button type="button" aria-label="打开账号安全" onClick={openSecurityEditor}
-                    className="drawer-side-action" title="账号安全">
+                    className="drawer-side-action drawer-round-action drawer-corner-action" title="账号安全">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <rect width="16" height="11" x="4" y="11" rx="2" />
                       <path d="M8 11V8a4 4 0 0 1 8 0v3" />
@@ -839,13 +839,12 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                   </button>
 
                   <div className="mb-3 text-center">
-                    <p className="text-sm font-semibold text-cyan-200">编辑资料</p>
-                    <h2 className="mt-1 truncate text-3xl font-bold text-white">{activeDisplayName}</h2>
-                    {user.email && <p className="mt-1 truncate text-xs text-slate-500">{user.email}</p>}
+                    <p className="drawer-avatar-flow text-sm font-semibold">编辑资料</p>
+                    <h2 className="drawer-avatar-flow mt-1 truncate text-3xl font-bold">{activeDisplayName}</h2>
                   </div>
 
                   <button type="button" onClick={() => profileFileInputRef.current?.click()} disabled={avatarUploading}
-                    className="group relative mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-full bg-[linear-gradient(135deg,#c084fc,#6366f1,#38bdf8)] p-1.5 shadow-[0_0_36px_rgba(129,140,248,0.65)] transition hover:scale-[1.02] disabled:cursor-wait sm:h-32 sm:w-32">
+                    className="group relative mx-auto mb-2 flex h-28 w-28 items-center justify-center rounded-full bg-[linear-gradient(135deg,#c084fc,#6366f1,#38bdf8)] p-1.5 shadow-[0_0_36px_rgba(129,140,248,0.65)] transition disabled:cursor-wait sm:h-32 sm:w-32">
                     <span className="h-full w-full overflow-hidden rounded-full bg-slate-800">
                       {activeAvatarUrl ? (
                         <img src={activeAvatarUrl} alt="avatar" loading="eager" decoding="sync" onError={handleAvatarError} className="h-full w-full object-cover" />
@@ -859,6 +858,9 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                       {avatarUploading ? '上传中...' : '更换头像'}
                     </span>
                   </button>
+                  <div className="mb-4 min-h-4 text-center">
+                    {user.email && <p className="truncate text-xs text-slate-500">{user.email}</p>}
+                  </div>
                   <input ref={profileFileInputRef} type="file" accept="image/*" className="hidden" onChange={handleProfileAvatarUpload} disabled={avatarUploading} />
 
                   <div className="space-y-3">
