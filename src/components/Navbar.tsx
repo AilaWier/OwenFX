@@ -128,7 +128,8 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerCardScale, setDrawerCardScale] = useState(1);
+  const [drawerActionMenuOpen, setDrawerActionMenuOpen] = useState(false);
+  const [drawerContentScale, setDrawerContentScale] = useState(1);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
@@ -154,7 +155,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   const [savingPassword, setSavingPassword] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchWrapRef = useRef<HTMLDivElement>(null);
-  const drawerCardRef = useRef<HTMLDivElement>(null);
+  const drawerContentRef = useRef<HTMLElement>(null);
   const profileFileInputRef = useRef<HTMLInputElement>(null);
 
   const applyResolvedAvatar = async (nextUser: NavUser | null | undefined, timeoutMs = 900) => {
@@ -230,6 +231,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
     if (drawerOpen) return;
     setEditingProfile(false);
     setEditingSecurity(false);
+    setDrawerActionMenuOpen(false);
     setProfileNotice(null);
     setEmailCode('');
     setEmailCodeSentTo('');
@@ -279,30 +281,41 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
 
   useLayoutEffect(() => {
     if (!drawerOpen) {
-      setDrawerCardScale(1);
+      setDrawerContentScale(1);
       return;
     }
 
-    const fitCard = () => {
-      const card = drawerCardRef.current;
-      if (!card) return;
-      const currentTransform = card.style.transform;
-      card.style.transform = 'none';
-      const naturalHeight = Math.max(card.scrollHeight, card.getBoundingClientRect().height);
-      card.style.transform = currentTransform;
+    const fitDrawerContent = () => {
+      const panel = drawerContentRef.current;
+      if (!panel) return;
+      const currentTransform = panel.style.transform;
+      panel.style.transform = 'none';
+      const contentChildren = Array.from(panel.children).filter(child => {
+        const style = window.getComputedStyle(child);
+        return style.position !== 'absolute' && !child.classList.contains('drawer-action-menu');
+      });
+      const contentBounds = contentChildren.reduce<{ top: number; bottom: number } | null>((bounds, child) => {
+        const rect = child.getBoundingClientRect();
+        if (!bounds) return { top: rect.top, bottom: rect.bottom };
+        return { top: Math.min(bounds.top, rect.top), bottom: Math.max(bounds.bottom, rect.bottom) };
+      }, null);
+      const panelStyle = window.getComputedStyle(panel);
+      const verticalPadding = (parseFloat(panelStyle.paddingTop) || 0) + (parseFloat(panelStyle.paddingBottom) || 0);
+      const naturalHeight = Math.max(1, contentBounds ? contentBounds.bottom - contentBounds.top + verticalPadding : panel.scrollHeight);
+      panel.style.transform = currentTransform;
       const availableHeight = Math.max(360, window.innerHeight - 32);
       const nextScale = Math.min(1, availableHeight / naturalHeight);
-      setDrawerCardScale(Number(nextScale.toFixed(3)));
+      setDrawerContentScale(Number(nextScale.toFixed(3)));
     };
 
-    const frame = window.requestAnimationFrame(fitCard);
-    const resizeObserver = new ResizeObserver(fitCard);
-    if (drawerCardRef.current) resizeObserver.observe(drawerCardRef.current);
-    window.addEventListener('resize', fitCard);
+    const frame = window.requestAnimationFrame(fitDrawerContent);
+    const resizeObserver = new ResizeObserver(fitDrawerContent);
+    if (drawerContentRef.current) resizeObserver.observe(drawerContentRef.current);
+    window.addEventListener('resize', fitDrawerContent);
     return () => {
       window.cancelAnimationFrame(frame);
       resizeObserver.disconnect();
-      window.removeEventListener('resize', fitCard);
+      window.removeEventListener('resize', fitDrawerContent);
     };
   }, [drawerOpen, editingProfile, editingSecurity, profileLoading, profileNotice, profileDraft.display_name, profileDraft.bio, emailDraft, emailCode, newPassword, confirmPassword, passwordCode]);
 
@@ -325,6 +338,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   }, [searchOpen]);
 
   const handleLogout = async () => {
+    setDrawerActionMenuOpen(false);
     const supabase = createClient();
     await supabase.auth.signOut();
     setUser(null);
@@ -344,6 +358,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
 
   const openProfileEditor = async () => {
     if (!user) return;
+    setDrawerActionMenuOpen(false);
     const currentAvatarUrl = await applyResolvedAvatar(user, 900) || user.avatar_url;
     setEditingProfile(true);
     setProfileNotice(null);
@@ -460,6 +475,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   };
 
   const openSecurityEditor = () => {
+    setDrawerActionMenuOpen(false);
     setEditingSecurity(true);
     setProfileNotice(null);
     setEmailDraft('');
@@ -545,6 +561,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
 
   const handleOpenDrawer = () => {
     setMenuOpen(false);
+    setDrawerActionMenuOpen(false);
     setDrawerOpen(true);
     void (async () => {
       const syncedUser = await withTimeout(syncDrawerProfile(), 1000, null);
@@ -647,7 +664,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
               </Link>
             ))}
           </nav>
-          <div className={"nav-actions flex items-center gap-2 " + (searchOpen ? "nav-actions-search-open" : "")}>
+          <div className={"nav-actions relative flex items-center gap-2 " + (searchOpen ? "nav-actions-search-open" : "")}>
             <div ref={searchWrapRef} className="nav-search-slot flex items-center">
               {!searchOpen ? (
                 <button type="button" aria-label="搜索" aria-expanded={searchOpen}
@@ -672,7 +689,9 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                 </form>
               )}
             </div>
-            <ThemeToggle />
+            <div className="nav-theme-slot">
+              <ThemeToggle />
+            </div>
             {user ? (
               <button type="button" aria-label="打开用户卡片" aria-expanded={drawerOpen}
                 onClick={handleOpenDrawer}
@@ -717,25 +736,58 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
       {user && drawerOpen && (
         <div className="user-drawer-layer fixed inset-0 z-[60] overflow-hidden overscroll-none">
           <button type="button" aria-label="关闭用户卡片" className="fixed inset-0 bg-black/55 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} />
-          <aside className="user-drawer-panel relative z-10 ml-auto flex h-[100dvh] w-[min(92vw,390px)] items-center justify-center overflow-hidden border-l border-white/15 bg-[#050a16]/95 p-3 shadow-[-24px_0_70px_rgba(2,6,23,0.65)] animate-slide-in-right sm:p-4">
-            <div ref={drawerCardRef} style={{ transform: `scale(${drawerCardScale})`, transformOrigin: 'center center' }} className="user-drawer-card relative w-full overflow-hidden rounded-[24px] border border-indigo-200/35 bg-[radial-gradient(circle_at_30%_8%,rgba(168,85,247,0.22),transparent_32%),radial-gradient(circle_at_92%_18%,rgba(56,189,248,0.18),transparent_26%),linear-gradient(145deg,rgba(30,41,75,0.86),rgba(6,13,29,0.96))] px-4 pb-4 pt-7 shadow-[0_0_60px_rgba(99,102,241,0.22)] transition-transform duration-150 sm:px-5">
-              <button type="button" aria-label="关闭" onClick={() => setDrawerOpen(false)}
-                className="drawer-round-action drawer-corner-action absolute right-5 top-5 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-indigo-200/20 bg-indigo-400/15 text-indigo-200 shadow-[0_0_30px_rgba(129,140,248,0.25)] transition hover:bg-indigo-400/25 hover:text-white">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
+          <aside ref={drawerContentRef} style={{ transform: `scale(${drawerContentScale})`, transformOrigin: 'right center' }} className="user-drawer-panel relative z-10 ml-auto flex h-[100dvh] w-[min(92vw,390px)] flex-col items-stretch justify-center overflow-hidden border-l border-white/15 bg-[#050a16]/95 px-4 pb-4 pt-7 shadow-[-24px_0_70px_rgba(2,6,23,0.65)] transition-transform duration-150 animate-slide-in-right sm:px-5">
+            <button type="button" aria-label="关闭" onClick={() => setDrawerOpen(false)}
+              className="drawer-round-action drawer-corner-action absolute right-5 top-10 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-indigo-200/20 bg-indigo-400/15 text-indigo-200 shadow-[0_0_30px_rgba(129,140,248,0.25)] transition hover:bg-indigo-400/25 hover:text-white">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+
+            {editingSecurity ? (
+              <button type="button" aria-label="返回编辑资料" onClick={() => { setEditingSecurity(false); setProfileNotice(null); }}
+                className="drawer-side-action drawer-round-action drawer-corner-action" title="返回编辑资料">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m15 18-6-6 6-6" />
                 </svg>
               </button>
+            ) : editingProfile ? (
+              <button type="button" aria-label="打开账号安全" onClick={openSecurityEditor}
+                className="drawer-side-action drawer-round-action drawer-corner-action" title="账号安全">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect width="16" height="11" x="4" y="11" rx="2" />
+                  <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                </svg>
+              </button>
+            ) : (
+              <div className="drawer-action-menu absolute left-5 top-10 z-30">
+                <button type="button" aria-label="打开个人操作" aria-expanded={drawerActionMenuOpen}
+                  onClick={() => setDrawerActionMenuOpen(prev => !prev)}
+                  className="drawer-round-action drawer-corner-action drawer-windmill-action flex h-10 w-10 items-center justify-center rounded-full border border-indigo-200/20 bg-indigo-400/15 text-indigo-200 shadow-[0_0_30px_rgba(129,140,248,0.25)] transition hover:bg-indigo-400/25 hover:text-white">
+                  <svg className="drawer-windmill six-star-spin" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M12.4 10.8C14.2 8.7 15.3 5.5 15.1 2.3C18.1 5.1 18.2 9.1 15.4 11.3C14.6 12 13.3 12.3 12.2 11.9Z" />
+                    <path d="M13.2 12.4C15.3 14.2 18.5 15.3 21.7 15.1C18.9 18.1 14.9 18.2 12.7 15.4C12 14.6 11.7 13.3 12.1 12.2Z" />
+                    <path d="M11.6 13.2C9.8 15.3 8.7 18.5 8.9 21.7C5.9 18.9 5.8 14.9 8.6 12.7C9.4 12 10.7 11.7 11.8 12.1Z" />
+                    <path d="M10.8 11.6C8.7 9.8 5.5 8.7 2.3 8.9C5.1 5.9 9.1 5.8 11.3 8.6C12 9.4 12.3 10.7 11.9 11.8Z" />
+                    <circle cx="12" cy="12" r="1.45" />
+                  </svg>
+                </button>
+                {drawerActionMenuOpen && (
+                  <div className="drawer-action-popover mt-3 grid w-32 gap-2 rounded-2xl border border-white/10 bg-slate-950/45 p-2 shadow-[0_18px_42px_rgba(2,6,23,0.32)] backdrop-blur-xl">
+                    <button type="button" onClick={openProfileEditor} className="drawer-action-popover-item">
+                      编辑资料
+                    </button>
+                    <button type="button" onClick={handleLogout} className="drawer-action-popover-item">
+                      退出登录
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
-              {editingSecurity ? (
+            {editingSecurity ? (
                 <>
-                  <button type="button" aria-label="返回编辑资料" onClick={() => { setEditingSecurity(false); setProfileNotice(null); }}
-                    className="drawer-side-action drawer-round-action drawer-corner-action" title="返回编辑资料">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="m15 18-6-6 6-6" />
-                    </svg>
-                  </button>
-
                   <div className="mb-4 text-center">
                     <p className="drawer-avatar-flow text-sm font-semibold">账号安全</p>
                     <h2 className="drawer-avatar-flow mt-1 truncate text-3xl font-bold">邮箱与密码</h2>
@@ -830,14 +882,6 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                 </>
               ) : editingProfile ? (
                 <>
-                  <button type="button" aria-label="打开账号安全" onClick={openSecurityEditor}
-                    className="drawer-side-action drawer-round-action drawer-corner-action" title="账号安全">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <rect width="16" height="11" x="4" y="11" rx="2" />
-                      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-                    </svg>
-                  </button>
-
                   <div className="mb-3 text-center">
                     <p className="drawer-avatar-flow text-sm font-semibold">编辑资料</p>
                     <h2 className="drawer-avatar-flow mt-1 truncate text-3xl font-bold">{activeDisplayName}</h2>
@@ -853,9 +897,6 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                           {initial}
                         </span>
                       )}
-                    </span>
-                    <span className="absolute bottom-2 rounded-full border border-white/15 bg-black/45 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
-                      {avatarUploading ? '上传中...' : '更换头像'}
                     </span>
                   </button>
                   <div className="mb-4 min-h-4 text-center">
@@ -999,19 +1040,9 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                     ))}
                   </div>
 
-                  <div className="mt-5 grid grid-cols-2 gap-3">
-                    <button type="button" onClick={openProfileEditor}
-                      className="uiverse-btn uiverse-btn-primary !px-3 !py-3 text-sm">
-                      编辑资料
-                    </button>
-                    <button type="button" onClick={handleLogout}
-                      className="uiverse-btn uiverse-btn-ghost !px-3 !py-3 text-sm">
-                      退出登录
-                    </button>
-                  </div>
+                  <div className="h-4" />
                 </>
               )}
-            </div>
           </aside>
         </div>
       )}

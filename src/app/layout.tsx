@@ -17,6 +17,17 @@ export const metadata: Metadata = {
   description: 'OwenFX 是一个精选软件资源分享站，汇集免费、开源、实用软件与技术文章。',
 };
 
+const themeInitScript = `(() => {
+  try {
+    const theme = localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.style.colorScheme = theme;
+  } catch (_) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.documentElement.style.colorScheme = 'dark';
+  }
+})();`;
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let initialUser: { id: string; name: string; email?: string | null; avatar_url: string | null } | null = null;
   try {
@@ -46,7 +57,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} style={{ overflowY: 'scroll', overflowX: 'hidden', scrollbarGutter: 'stable' }} data-theme="dark" suppressHydrationWarning>
-            <head><style>{'::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:rgba(99,102,241,0.3);border-radius:3px}html{scrollbar-gutter:stable}body{margin:0}'}</style></head>
+            <head><script dangerouslySetInnerHTML={{ __html: themeInitScript }} /><style>{'::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:rgba(99,102,241,0.3);border-radius:3px}html{scrollbar-gutter:stable}body{margin:0}'}</style></head>
       <body style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         <ThemeProvider>
           <Navbar initialUser={initialUser} />
