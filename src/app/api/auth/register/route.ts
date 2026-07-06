@@ -2,13 +2,18 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import nodemailer from 'nodemailer'
+import { REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE, isSupportedRegistrationEmail } from '@/lib/registration-email'
 
 export async function POST(request: Request) {
   try {
     const { email, password, name } = await request.json()
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
 
-    if (!email || !password || !name) {
+    if (!normalizedEmail || !password || !name) {
       return NextResponse.json({ error: '请填写所有字段' }, { status: 400 })
+    }
+    if (!isSupportedRegistrationEmail(normalizedEmail)) {
+      return NextResponse.json({ error: REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE }, { status: 400 })
     }
     if (password.length < 6) {
       return NextResponse.json({ error: '密码至少6位' }, { status: 400 })
@@ -22,7 +27,7 @@ export async function POST(request: Request) {
 
     // Try to create user with admin API (email_confirm bypasses confirm email setting)
     const { data, error } = await adminClient.auth.admin.createUser({
-      email,
+      email: normalizedEmail,
       password,
       email_confirm: true,
       user_metadata: { display_name: name },
@@ -45,7 +50,7 @@ export async function POST(request: Request) {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
 
     await adminClient.from('verification_codes').insert({
-      email, code, used: false, expires_at: expiresAt, created_at: new Date().toISOString()
+      email: normalizedEmail, code, used: false, expires_at: expiresAt, created_at: new Date().toISOString()
     })
 
     // Send email (non-critical - don't fail if it doesn't work)
@@ -58,7 +63,7 @@ export async function POST(request: Request) {
       })
       await transporter.sendMail({
         from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to: email,
+        to: normalizedEmail,
         subject: 'OwenFX 注册验证码',
         html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto">
           <h2>OwenFX 注册验证</h2>
@@ -73,7 +78,7 @@ export async function POST(request: Request) {
       // Non-critical, user can still log in or request code again
     }
 
-    return NextResponse.json({ success: true, email })
+    return NextResponse.json({ success: true, email: normalizedEmail })
   } catch (err: any) {
     console.error('Register error:', err?.message || err)
     return NextResponse.json({ error: '服务器错误' }, { status: 500 })

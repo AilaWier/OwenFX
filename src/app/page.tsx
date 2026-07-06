@@ -1,9 +1,7 @@
 import { mockSoftware } from '@/lib/mock';
 import { mockArticles } from '@/lib/mock-articles';
-import Link from 'next/link';
 import ParticleBackground from '@/components/ParticleBackground';
 import Carousel from '@/components/Carousel';
-import SearchBar from '@/components/SearchBar';
 import HomeSections from '@/components/HomeSections';
 
 export default async function HomePage() {
@@ -15,10 +13,9 @@ export default async function HomePage() {
     <div>
       {/* Hero with heartbeat light orbs */}
       <div className="particle-wrap">
-        <style>{`.particle-wrap{width:100%;height:112px;border-radius:12px;overflow:hidden;margin-bottom:1rem;background:transparent;position:relative}@media(min-width:768px){.particle-wrap{height:144px}}`}</style>
+        <style>{`.particle-wrap{width:100%;height:112px;border-radius:12px;overflow:hidden;margin-bottom:.5rem;background:transparent;position:relative}@media(min-width:768px){.particle-wrap{height:144px}}`}</style>
         <ParticleBackground />
       </div>
-    <SearchBar />
     <Carousel />
 
             <HomeSections articles={topArticles} featured={featured} />

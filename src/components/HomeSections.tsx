@@ -53,23 +53,21 @@ export default function HomeSections({ articles, featured }: HomeSectionProps) {
           </div>
           <div className="flex items-center justify-center gap-2 mt-6">
             <button onClick={() => setFp(p => Math.max(0, p - 1))}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M 3 12 L 18 21 Q 14 12 18 3 Z" />
-              </svg>
+              className="w-8 h-8 rounded-full transition-all"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="text-base leading-none" style={{ color: 'var(--text-secondary)' }}>«</span>
             </button>
             {Array.from({ length: totalPages }, (_, i) => (
               <button key={i} onClick={() => setFp(i)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg transition-all text-xs font-medium"
+                className="w-8 h-8 flex items-center justify-center rounded-full transition-all text-xs font-medium"
                 style={fp === i ? { background: 'var(--accent-bg)', color: 'var(--accent)' } : { color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}>
                 {i + 1}
               </button>
             ))}
             <button onClick={() => setFp(p => Math.min(totalPages - 1, p + 1))}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M 21 12 L 6 3 Q 10 12 6 21 Z" />
-              </svg>
+              className="w-8 h-8 rounded-full transition-all"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="text-base leading-none" style={{ color: 'var(--text-secondary)' }}>»</span>
             </button>
           </div>
         </section>

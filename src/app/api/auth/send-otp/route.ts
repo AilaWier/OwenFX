@@ -1,11 +1,17 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import nodemailer from 'nodemailer'
+import { REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE, isSupportedRegistrationEmail } from '@/lib/registration-email'
 
 export async function POST(request: Request) {
   try {
     const { email } = await request.json()
-    if (!email) return NextResponse.json({ error: '请输入邮箱' }, { status: 400 })
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
+
+    if (!normalizedEmail) return NextResponse.json({ error: '请输入邮箱' }, { status: 400 })
+    if (!isSupportedRegistrationEmail(normalizedEmail)) {
+      return NextResponse.json({ error: REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE }, { status: 400 })
+    }
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,12 +22,11 @@ export async function POST(request: Request) {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
 
     const { error } = await supabase.from('verification_codes').insert({
-      email, code, used: false, expires_at: expiresAt, created_at: new Date().toISOString()
+      email: normalizedEmail, code, used: false, expires_at: expiresAt, created_at: new Date().toISOString()
     })
 
     if (error) return NextResponse.json({ error: '发送失败' }, { status: 500 })
 
-    // Send email via Gmail SMTP
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: Number(process.env.SMTP_PORT) || 587,
@@ -34,7 +39,7 @@ export async function POST(request: Request) {
 
     await transporter.sendMail({
       from: process.env.SMTP_FROM || process.env.SMTP_USER,
-      to: email,
+      to: normalizedEmail,
       subject: 'OwenFX 注册验证码',
       html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto">
         <h2>OwenFX 注册验证</h2>

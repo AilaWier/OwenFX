@@ -1,6 +1,7 @@
-﻿'use client';
+'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE, isSupportedRegistrationEmail } from '@/lib/registration-email';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -12,14 +13,30 @@ export default function RegisterPage() {
   const [registeredEmail, setRegisteredEmail] = useState('');
   const [verifying, setVerifying] = useState(false);
 
+  const handleEmailChange = (nextEmail: string) => {
+    setEmail(nextEmail);
+    if (status === 'error' && errorMsg === REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE) {
+      setStatus('idle');
+      setErrorMsg('');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!isSupportedRegistrationEmail(normalizedEmail)) {
+      setErrorMsg(REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE);
+      setStatus('error');
+      return;
+    }
+
     setStatus('loading');
     try {
-      const r = await fetch('/api/auth/register', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password,name}) });
+      const r = await fetch('/api/auth/register', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email: normalizedEmail,password,name}) });
       const d = await r.json();
       if (r.ok) {
-        setRegisteredEmail(d.email || email);
+        setRegisteredEmail(d.email || normalizedEmail);
         setStatus('verify');
         return;
       }
@@ -85,7 +102,7 @@ export default function RegisterPage() {
               <p className="text-sm mb-6" style={{color:'var(--text-secondary)'}}>加入 OwenFX 社区</p>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <input type="text" placeholder="用户名" value={name} onChange={e => setName(e.target.value)} required className="glass-input w-full rounded-full px-4" />
-                <input type="email" placeholder="邮箱" value={email} onChange={e => setEmail(e.target.value)} required className="glass-input w-full rounded-full px-4" />
+                <input type="email" placeholder="邮箱" value={email} onChange={e => handleEmailChange(e.target.value)} required className="glass-input w-full rounded-full px-4" />
                 <input type="password" placeholder="密码 (至少6位)" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="glass-input w-full rounded-full px-4" />
                 {status === 'error' && <p className="text-xs text-center" style={{color:'var(--danger)'}}>{errorMsg}</p>}
                 <button type="submit" disabled={status === 'loading'} className="btn-apple btn-apple-primary w-full justify-center !py-3 rounded-full">
