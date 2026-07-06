@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { FormEvent, useState, useEffect, useRef } from 'react';
+import { FormEvent, useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
 import { createClient } from '@/lib/supabase/client';
@@ -50,16 +50,31 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!drawerOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setDrawerOpen(false);
     };
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const previousHtmlOverflowY = document.documentElement.style.overflowY;
+    const previousBodyOverflowY = document.body.style.overflowY;
+    const previousDrawerScrollbarWidth = document.body.style.getPropertyValue('--drawer-scrollbar-width');
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.documentElement.classList.add('drawer-scroll-lock');
+    document.body.classList.add('drawer-scroll-lock');
+    document.body.style.setProperty('--drawer-scrollbar-width', `${scrollbarWidth}px`);
+    document.documentElement.style.overflowY = 'hidden';
+    document.body.style.overflowY = 'hidden';
     window.addEventListener('keydown', onKeyDown);
     return () => {
-      document.body.style.overflow = previousOverflow;
+      document.documentElement.classList.remove('drawer-scroll-lock');
+      document.body.classList.remove('drawer-scroll-lock');
+      if (previousDrawerScrollbarWidth) {
+        document.body.style.setProperty('--drawer-scrollbar-width', previousDrawerScrollbarWidth);
+      } else {
+        document.body.style.removeProperty('--drawer-scrollbar-width');
+      }
+      document.documentElement.style.overflowY = previousHtmlOverflowY;
+      document.body.style.overflowY = previousBodyOverflowY;
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [drawerOpen]);
@@ -103,6 +118,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   const initial = user?.name?.charAt(0).toUpperCase() || 'U';
 
   return (
+    <>
     <div className={"glass-nav fixed top-0 left-0 right-0 z-50 flex flex-col " + (scrolled ? "shadow-sm" : "")}>
       <header className="h-14 flex items-center">
         <div className="w-full max-w-6xl mx-auto px-4 md:px-6 flex items-center justify-between">
@@ -183,24 +199,19 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
           </nav>
         </div>
       )}
+    </div>
       {user && drawerOpen && (
-        <div className="fixed inset-0 z-[60]">
-          <button type="button" aria-label="关闭用户卡片" className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} />
-          <aside className="user-drawer-panel absolute right-0 top-0 h-[100dvh] w-[min(92vw,390px)] overflow-y-auto border-l border-white/15 bg-[#050a16]/95 p-4 shadow-[-24px_0_70px_rgba(2,6,23,0.65)] animate-slide-in-right sm:p-5">
-            <button type="button" aria-label="关闭" onClick={() => setDrawerOpen(false)}
-              className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[var(--text-secondary)] transition hover:bg-white/10 hover:text-[var(--text-primary)]">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-
+        <div className="user-drawer-layer fixed inset-0 z-[60] overflow-y-auto overscroll-contain">
+          <button type="button" aria-label="关闭用户卡片" className="fixed inset-0 bg-black/55 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} />
+          <aside className="user-drawer-panel relative z-10 ml-auto min-h-[100dvh] w-[min(92vw,390px)] border-l border-white/15 bg-[#050a16]/95 p-4 shadow-[-24px_0_70px_rgba(2,6,23,0.65)] animate-slide-in-right sm:p-5">
             <div className="user-drawer-card relative mt-10 overflow-hidden rounded-[28px] border border-indigo-200/35 bg-[radial-gradient(circle_at_30%_8%,rgba(168,85,247,0.22),transparent_32%),radial-gradient(circle_at_92%_18%,rgba(56,189,248,0.18),transparent_26%),linear-gradient(145deg,rgba(30,41,75,0.86),rgba(6,13,29,0.96))] px-5 pb-5 pt-9 shadow-[0_0_60px_rgba(99,102,241,0.22)] sm:px-6">
-              <div className="absolute right-6 top-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-indigo-200/20 bg-indigo-400/15 text-indigo-200 shadow-[0_0_30px_rgba(129,140,248,0.25)]">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M5 18.5h14l1-10-4.8 3.5L12 5.5 8.8 12 4 8.5l1 10Zm1.2 2A1.2 1.2 0 0 1 5 19.3h14a1.2 1.2 0 0 1 0 2.4H5a1.2 1.2 0 0 1-1.2-1.2Z" />
+              <button type="button" aria-label="关闭" onClick={() => setDrawerOpen(false)}
+                className="absolute right-6 top-6 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-indigo-200/20 bg-indigo-400/15 text-indigo-200 shadow-[0_0_30px_rgba(129,140,248,0.25)] transition hover:bg-indigo-400/25 hover:text-white">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
-              </div>
+              </button>
 
               <div className="mx-auto mb-5 flex h-36 w-36 items-center justify-center rounded-full bg-[linear-gradient(135deg,#c084fc,#6366f1,#38bdf8)] p-1.5 shadow-[0_0_36px_rgba(129,140,248,0.65)]">
                 <div className="h-full w-full overflow-hidden rounded-full bg-slate-800">
@@ -217,18 +228,13 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2">
                   <h2 className="max-w-[230px] truncate text-4xl font-bold text-white">{user.name}</h2>
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white shadow-[0_0_24px_rgba(59,130,246,0.6)]">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="m5 12 4 4L19 6" />
-                    </svg>
-                  </span>
                 </div>
                 <p className="mt-2 truncate text-lg font-medium text-slate-300">AI 软件探索者</p>
                 {user.email && <p className="mt-1 truncate text-xs text-slate-500">{user.email}</p>}
               </div>
 
               <div className="mt-7 flex items-center gap-3">
-                <span className="rounded-xl bg-[linear-gradient(135deg,#7c3aed,#8b5cf6)] px-4 py-2 text-lg font-bold text-white shadow-[0_0_22px_rgba(139,92,246,0.35)]">Lv.8</span>
+                <span className="text-lg font-bold text-indigo-200">Lv.8</span>
                 <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-950/55">
                   <div className="h-full w-4/5 rounded-full bg-[linear-gradient(90deg,#8b5cf6,#38bdf8)]" />
                 </div>
@@ -313,6 +319,6 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
           </aside>
         </div>
       )}
-    </div>
+    </>
   );
 }
