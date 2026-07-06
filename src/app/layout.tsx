@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  let initialUser: { name: string; avatar_url: string | null } | null = null;
+  let initialUser: { id: string; name: string; email?: string | null; avatar_url: string | null } | null = null;
   try {
     const cookieStore = await cookies();
     const supabase = createServerClient(
@@ -28,14 +28,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     );
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
+      const metadata = session.user.user_metadata as Record<string, unknown>;
       let av: string | null = null;
+      let displayName: string | null = null;
+      const metadataAvatar = typeof metadata.avatar_url === 'string' ? metadata.avatar_url : typeof metadata.picture === 'string' ? metadata.picture : null;
+      const metadataName = typeof metadata.display_name === 'string' ? metadata.display_name : typeof metadata.name === 'string' ? metadata.name : null;
       try {
-        const { data: prof } = await supabase.from('profiles').select('display_name, avatar_url').eq('id', session.user.id).single();
+        const { data: prof } = await supabase.from('profiles').select('display_name, avatar_url').eq('id', session.user.id).maybeSingle();
         if (prof) {
+          displayName = prof.display_name;
           av = prof.avatar_url;
         }
       } catch (_) {}
-      initialUser = { name: session.user.email?.split('@')[0] || '用户', avatar_url: av };
+      initialUser = { id: session.user.id, name: displayName || metadataName || session.user.email?.split('@')[0] || '用户', email: session.user.email, avatar_url: av || metadataAvatar };
     }
   } catch (_) {}
 
