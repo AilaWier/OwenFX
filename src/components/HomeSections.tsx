@@ -27,7 +27,7 @@ export default function HomeSections({ articles, featured }: HomeSectionProps) {
               <span className="text-xs font-medium rounded-full px-2 py-0.5 mb-3 inline-block" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>{a.category}</span>
               <h3 className="font-semibold mb-2 line-clamp-2">{a.title}</h3>
               <p className="text-sm mb-3 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{a.description}</p>
-              <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-tertiary)' }}><span>{a.readTime}</span><span>{a.createdAt}</span></div>
+              <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-tertiary)' }}><span>{a.createdAt}</span></div>
             </Link>
           ))}
         </div>

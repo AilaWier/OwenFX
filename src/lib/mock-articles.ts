@@ -7,7 +7,6 @@ export interface Article {
   tags: string[];
   author: string;
   createdAt: string;
-  readTime: string;
   featured: boolean;
 }
 
@@ -21,7 +20,6 @@ export const mockArticles: Article[] = [
     tags: ['Windows', '效率', '开源'],
     author: 'OwenFX',
     createdAt: '2026-06-25',
-    readTime: '8 分钟',
     featured: true,
   },
   {
@@ -33,7 +31,6 @@ export const mockArticles: Article[] = [
     tags: ['开源', '指南', '入门'],
     author: 'OwenFX',
     createdAt: '2026-06-22',
-    readTime: '5 分钟',
     featured: false,
   },
   {
@@ -45,7 +42,6 @@ export const mockArticles: Article[] = [
     tags: ['Windows', '优化', '指南'],
     author: 'OwenFX',
     createdAt: '2026-06-18',
-    readTime: '6 分钟',
     featured: false,
   },
   {
@@ -57,7 +53,6 @@ export const mockArticles: Article[] = [
     tags: ['Android', '应用', '精选'],
     author: 'OwenFX',
     createdAt: '2026-07-01',
-    readTime: '3 分钟',
     featured: false,
   },
 ];

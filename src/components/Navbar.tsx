@@ -33,18 +33,59 @@ const navLinks = [
   { label: '联系', href: '/contact' },
 ];
 
+type AchievementIcon = 'triangle' | 'diamond' | 'star';
+
 const achievements = [
-  { title: '软件达人', desc: '分享了 50+ 款优质软件', textColor: 'text-violet-300', bgColor: 'bg-violet-500/20' },
-  { title: 'AI 探索者', desc: '持续关注 AI 领域 100 天', textColor: 'text-blue-300', bgColor: 'bg-blue-500/20' },
-  { title: '连续签到30天', desc: '坚持就是胜利!', textColor: 'text-amber-300', bgColor: 'bg-amber-500/20' },
+  { title: '软件达人', desc: '分享了 50+ 款优质软件', icon: 'triangle' as const, textColor: 'text-violet-300' },
+  { title: 'AI 探索者', desc: '持续关注 AI 领域 100 天', icon: 'diamond' as const, textColor: 'text-blue-300' },
+  { title: '连续签到30天', desc: '坚持就是胜利!', icon: 'star' as const, textColor: 'text-amber-300' },
 ];
 
-const levelThresholds = [0, 300, 800, 1500, 2500, 3800, 5400, 7200, 9000] as const;
-const profileLevel = 8;
+const renderAchievementIcon = (icon: AchievementIcon) => {
+  switch (icon) {
+    case 'triangle':
+      return (
+        <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 4.2 20 18.4H4L12 4.2Z" />
+          <path d="M12 8.7 16.2 16.1H7.8L12 8.7Z" />
+        </svg>
+      );
+    case 'diamond':
+      return (
+        <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 3.8 20.2 12 12 20.2 3.8 12 12 3.8Z" />
+          <path d="M12 8.1 15.9 12 12 15.9 8.1 12 12 8.1Z" />
+        </svg>
+      );
+    default:
+      return (
+        <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 3.7 14.35 8.45 19.6 9.2 15.8 12.9 16.7 18.1 12 15.65 7.3 18.1 8.2 12.9 4.4 9.2 9.65 8.45 12 3.7Z" />
+          <path d="M12 8.15 13.3 10.8 16.25 11.2 14.1 13.25 14.6 16.15 12 14.8 9.4 16.15 9.9 13.25 7.75 11.2 10.7 10.8 12 8.15Z" />
+        </svg>
+      );
+  }
+};
+
+const levelThresholds = [0, 300, 800, 1500, 2500, 3800, 5400, 7200, 9000, 12000] as const;
+const profileLevel = 9;
+const maxProfileLevel = levelThresholds.length - 1;
+const isMaxProfileLevel = profileLevel >= maxProfileLevel;
+const levelToneClass = profileLevel >= maxProfileLevel
+  ? 'drawer-level-tone-max'
+  : `drawer-level-tone-${Math.min(Math.max(profileLevel, 1), 7)}`;
 const levelStartXp = levelThresholds[profileLevel - 1];
 const levelNextXp = levelThresholds[profileLevel];
-const levelCurrentXp = levelStartXp + Math.round((levelNextXp - levelStartXp) * 0.8);
-const levelProgressPercent = Math.round(((levelCurrentXp - levelStartXp) / (levelNextXp - levelStartXp)) * 100);
+const levelCurrentXp = isMaxProfileLevel
+  ? levelNextXp
+  : levelStartXp + Math.round((levelNextXp - levelStartXp) * 0.8);
+const levelProgressPercent = isMaxProfileLevel
+  ? 100
+  : Math.round(((levelCurrentXp - levelStartXp) / (levelNextXp - levelStartXp)) * 100);
+const levelStatusLabel = isMaxProfileLevel ? 'Max' : `${levelProgressPercent}%`;
+const levelExperienceLabel = isMaxProfileLevel
+  ? `满级 · ${levelNextXp} 经验值`
+  : `${levelCurrentXp} » ${levelNextXp} 经验值`;
 
 const removeCacheBust = (url: string | null) => url ? url.replace(/([?&])t=\d+$/, '') : null;
 const avatarExtensions = ['png', 'jpg', 'jpeg', 'webp'] as const;
@@ -128,7 +169,6 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerActionMenuOpen, setDrawerActionMenuOpen] = useState(false);
   const [drawerContentScale, setDrawerContentScale] = useState(1);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -157,6 +197,35 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   const searchWrapRef = useRef<HTMLDivElement>(null);
   const drawerContentRef = useRef<HTMLElement>(null);
   const profileFileInputRef = useRef<HTMLInputElement>(null);
+  const drawerActionClickTimerRef = useRef<number | null>(null);
+  const overviewLongPressTimerRef = useRef<number | null>(null);
+  const ignoreNextOverviewClickRef = useRef(false);
+
+  const clearDrawerActionClickTimer = () => {
+    if (drawerActionClickTimerRef.current === null) return;
+    window.clearTimeout(drawerActionClickTimerRef.current);
+    drawerActionClickTimerRef.current = null;
+  };
+
+  const clearOverviewLongPressTimer = () => {
+    if (overviewLongPressTimerRef.current === null) return;
+    window.clearTimeout(overviewLongPressTimerRef.current);
+    overviewLongPressTimerRef.current = null;
+  };
+
+  const scheduleDrawerCornerAction = (action: () => void | Promise<void>) => {
+    clearDrawerActionClickTimer();
+    drawerActionClickTimerRef.current = window.setTimeout(() => {
+      drawerActionClickTimerRef.current = null;
+      void action();
+    }, 240);
+  };
+
+  const closeDrawerFromCornerDoubleClick = () => {
+    clearDrawerActionClickTimer();
+    clearOverviewLongPressTimer();
+    setDrawerOpen(false);
+  };
 
   const applyResolvedAvatar = async (nextUser: NavUser | null | undefined, timeoutMs = 900) => {
     const nextAvatarUrl = await resolveAvatarUrl(nextUser, timeoutMs);
@@ -231,7 +300,8 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
     if (drawerOpen) return;
     setEditingProfile(false);
     setEditingSecurity(false);
-    setDrawerActionMenuOpen(false);
+    clearDrawerActionClickTimer();
+    clearOverviewLongPressTimer();
     setProfileNotice(null);
     setEmailCode('');
     setEmailCodeSentTo('');
@@ -292,7 +362,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
       panel.style.transform = 'none';
       const contentChildren = Array.from(panel.children).filter(child => {
         const style = window.getComputedStyle(child);
-        return style.position !== 'absolute' && !child.classList.contains('drawer-action-menu');
+        return style.position !== 'absolute';
       });
       const contentBounds = contentChildren.reduce<{ top: number; bottom: number } | null>((bounds, child) => {
         const rect = child.getBoundingClientRect();
@@ -338,7 +408,8 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   }, [searchOpen]);
 
   const handleLogout = async () => {
-    setDrawerActionMenuOpen(false);
+    clearDrawerActionClickTimer();
+    clearOverviewLongPressTimer();
     const supabase = createClient();
     await supabase.auth.signOut();
     setUser(null);
@@ -358,7 +429,9 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
 
   const openProfileEditor = async () => {
     if (!user) return;
-    setDrawerActionMenuOpen(false);
+    clearDrawerActionClickTimer();
+    clearOverviewLongPressTimer();
+    setEditingSecurity(false);
     const currentAvatarUrl = await applyResolvedAvatar(user, 900) || user.avatar_url;
     setEditingProfile(true);
     setProfileNotice(null);
@@ -475,7 +548,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   };
 
   const openSecurityEditor = () => {
-    setDrawerActionMenuOpen(false);
+    clearDrawerActionClickTimer();
     setEditingSecurity(true);
     setProfileNotice(null);
     setEmailDraft('');
@@ -561,13 +634,31 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
 
   const handleOpenDrawer = () => {
     setMenuOpen(false);
-    setDrawerActionMenuOpen(false);
     setDrawerOpen(true);
     void (async () => {
       const syncedUser = await withTimeout(syncDrawerProfile(), 1000, null);
       const nextUser = syncedUser || user;
       void applyResolvedAvatar(nextUser, 900);
     })();
+  };
+
+  const handleOverviewCornerPointerDown = () => {
+    clearOverviewLongPressTimer();
+    ignoreNextOverviewClickRef.current = false;
+    overviewLongPressTimerRef.current = window.setTimeout(() => {
+      overviewLongPressTimerRef.current = null;
+      ignoreNextOverviewClickRef.current = true;
+      void handleLogout();
+    }, 3000);
+  };
+
+  const handleOverviewCornerClick = () => {
+    clearOverviewLongPressTimer();
+    if (ignoreNextOverviewClickRef.current) {
+      ignoreNextOverviewClickRef.current = false;
+      return;
+    }
+    scheduleDrawerCornerAction(openProfileEditor);
   };
 
   const handleSendPasswordCode = async () => {
@@ -737,23 +828,19 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
         <div className="user-drawer-layer fixed inset-0 z-[60] overflow-hidden overscroll-none">
           <button type="button" aria-label="关闭用户卡片" className="fixed inset-0 bg-black/55 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} />
           <aside ref={drawerContentRef} style={{ transform: `scale(${drawerContentScale})`, transformOrigin: 'right center' }} className="user-drawer-panel relative z-10 ml-auto flex h-[100dvh] w-[min(92vw,390px)] flex-col items-stretch justify-center overflow-hidden border-l border-white/15 bg-[#050a16]/95 px-4 pb-4 pt-7 shadow-[-24px_0_70px_rgba(2,6,23,0.65)] transition-transform duration-150 animate-slide-in-right sm:px-5">
-            <button type="button" aria-label="关闭" onClick={() => setDrawerOpen(false)}
-              className="drawer-round-action drawer-corner-action absolute right-5 top-10 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-indigo-200/20 bg-indigo-400/15 text-indigo-200 shadow-[0_0_30px_rgba(129,140,248,0.25)] transition hover:bg-indigo-400/25 hover:text-white">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-
             {editingSecurity ? (
-              <button type="button" aria-label="返回编辑资料" onClick={() => { setEditingSecurity(false); setProfileNotice(null); }}
+              <button type="button" aria-label="返回编辑资料"
+                onClick={() => scheduleDrawerCornerAction(() => { setEditingSecurity(false); setProfileNotice(null); })}
+                onDoubleClick={closeDrawerFromCornerDoubleClick}
                 className="drawer-side-action drawer-round-action drawer-corner-action" title="返回编辑资料">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="m15 18-6-6 6-6" />
                 </svg>
               </button>
             ) : editingProfile ? (
-              <button type="button" aria-label="打开账号安全" onClick={openSecurityEditor}
+              <button type="button" aria-label="打开账号安全"
+                onClick={() => scheduleDrawerCornerAction(openSecurityEditor)}
+                onDoubleClick={closeDrawerFromCornerDoubleClick}
                 className="drawer-side-action drawer-round-action drawer-corner-action" title="账号安全">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <rect width="16" height="11" x="4" y="11" rx="2" />
@@ -761,29 +848,22 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                 </svg>
               </button>
             ) : (
-              <div className="drawer-action-menu absolute left-5 top-10 z-30">
-                <button type="button" aria-label="打开个人操作" aria-expanded={drawerActionMenuOpen}
-                  onClick={() => setDrawerActionMenuOpen(prev => !prev)}
-                  className="drawer-round-action drawer-corner-action drawer-windmill-action flex h-10 w-10 items-center justify-center rounded-full border border-indigo-200/20 bg-indigo-400/15 text-indigo-200 shadow-[0_0_30px_rgba(129,140,248,0.25)] transition hover:bg-indigo-400/25 hover:text-white">
-                  <svg className="drawer-windmill six-star-spin" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M12.4 10.8C14.2 8.7 15.3 5.5 15.1 2.3C18.1 5.1 18.2 9.1 15.4 11.3C14.6 12 13.3 12.3 12.2 11.9Z" />
-                    <path d="M13.2 12.4C15.3 14.2 18.5 15.3 21.7 15.1C18.9 18.1 14.9 18.2 12.7 15.4C12 14.6 11.7 13.3 12.1 12.2Z" />
-                    <path d="M11.6 13.2C9.8 15.3 8.7 18.5 8.9 21.7C5.9 18.9 5.8 14.9 8.6 12.7C9.4 12 10.7 11.7 11.8 12.1Z" />
-                    <path d="M10.8 11.6C8.7 9.8 5.5 8.7 2.3 8.9C5.1 5.9 9.1 5.8 11.3 8.6C12 9.4 12.3 10.7 11.9 11.8Z" />
-                    <circle cx="12" cy="12" r="1.45" />
-                  </svg>
-                </button>
-                {drawerActionMenuOpen && (
-                  <div className="drawer-action-popover mt-3 grid w-32 gap-2 rounded-2xl border border-white/10 bg-slate-950/45 p-2 shadow-[0_18px_42px_rgba(2,6,23,0.32)] backdrop-blur-xl">
-                    <button type="button" onClick={openProfileEditor} className="drawer-action-popover-item">
-                      编辑资料
-                    </button>
-                    <button type="button" onClick={handleLogout} className="drawer-action-popover-item">
-                      退出登录
-                    </button>
-                  </div>
-                )}
-              </div>
+              <button type="button" aria-label="编辑资料"
+                onPointerDown={handleOverviewCornerPointerDown}
+                onPointerUp={clearOverviewLongPressTimer}
+                onPointerLeave={clearOverviewLongPressTimer}
+                onPointerCancel={clearOverviewLongPressTimer}
+                onClick={handleOverviewCornerClick}
+                onDoubleClick={closeDrawerFromCornerDoubleClick}
+                className="drawer-side-action drawer-round-action drawer-corner-action" title="编辑资料">
+                <svg className="drawer-windmill six-star-spin" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12.4 10.8C14.2 8.7 15.3 5.5 15.1 2.3C18.1 5.1 18.2 9.1 15.4 11.3C14.6 12 13.3 12.3 12.2 11.9Z" />
+                  <path d="M13.2 12.4C15.3 14.2 18.5 15.3 21.7 15.1C18.9 18.1 14.9 18.2 12.7 15.4C12 14.6 11.7 13.3 12.1 12.2Z" />
+                  <path d="M11.6 13.2C9.8 15.3 8.7 18.5 8.9 21.7C5.9 18.9 5.8 14.9 8.6 12.7C9.4 12 10.7 11.7 11.8 12.1Z" />
+                  <path d="M10.8 11.6C8.7 9.8 5.5 8.7 2.3 8.9C5.1 5.9 9.1 5.8 11.3 8.6C12 9.4 12.3 10.7 11.9 11.8Z" />
+                  <circle cx="12" cy="12" r="1.45" />
+                </svg>
+              </button>
             )}
 
             {editingSecurity ? (
@@ -956,20 +1036,20 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
 
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-2">
-                      <h2 className="max-w-[230px] truncate text-3xl font-bold text-white">{activeDisplayName}</h2>
+                      <h2 className="drawer-avatar-flow mt-1 max-w-[230px] truncate text-3xl font-bold">{activeDisplayName}</h2>
                     </div>
                     <p className="mt-1 truncate text-base font-semibold"><span className="site-owner-flow">站长</span></p>
                     {user.email && <p className="mt-1 truncate text-xs text-slate-500">{user.email}</p>}
                   </div>
 
                   <div className="mt-5 flex items-center gap-3">
-                    <span className="text-lg font-bold text-indigo-200">Lv.{profileLevel}</span>
+                    <span className={`drawer-level-tone text-lg font-bold ${levelToneClass}`}>Lv.{profileLevel}</span>
                     <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-950/55">
                       <div className="h-full rounded-full bg-[linear-gradient(90deg,#8b5cf6,#38bdf8)]" style={{ width: `${levelProgressPercent}%` }} />
                     </div>
-                    <span className="text-lg font-semibold text-slate-300">{levelProgressPercent}%</span>
+                    <span className={`drawer-level-tone text-lg font-semibold ${levelToneClass}`}>{levelStatusLabel}</span>
                   </div>
-                  <p className="mt-1 text-center text-sm text-slate-400">{levelCurrentXp} » {levelNextXp} 经验值</p>
+                  <p className="mt-1 text-center text-sm text-slate-400">{levelExperienceLabel}</p>
 
                   <div className="my-4 h-px bg-white/10" />
 
@@ -1011,13 +1091,13 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                   <div className="my-4 h-px bg-white/10" />
 
                   <div className="flex flex-wrap justify-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent-bg)] bg-[var(--accent-bg)] px-3 py-1.5 text-sm font-semibold text-red-300">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent-bg)] bg-[var(--accent-bg)] px-3 py-1.5 text-sm font-semibold text-white">
                       <span className="h-2 w-2 rounded-full bg-[#FF4444]" />AI
                     </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent-bg)] bg-[var(--accent-bg)] px-3 py-1.5 text-sm font-semibold text-emerald-300">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent-bg)] bg-[var(--accent-bg)] px-3 py-1.5 text-sm font-semibold text-white">
                       <span className="h-2 w-2 rounded-full bg-[#3FB950]" />开源
                     </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent-bg)] bg-[var(--accent-bg)] px-3 py-1.5 text-sm font-semibold text-violet-300">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent-bg)] bg-[var(--accent-bg)] px-3 py-1.5 text-sm font-semibold text-white">
                       <span className="h-2 w-2 rounded-full bg-[#A855F7]" />Windows
                     </span>
                   </div>
@@ -1025,12 +1105,10 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                   <div className="my-4 h-px bg-white/10" />
 
                   <div className="space-y-3">
-                    {achievements.map(({ title, desc, textColor, bgColor }) => (
+                    {achievements.map(({ title, desc, icon, textColor }) => (
                       <div key={title} className="flex items-center gap-3">
-                        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 ${bgColor} ${textColor}`}>
-                          <svg width="23" height="23" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M12 2.6 14.6 8l5.9.9-4.3 4.2 1 5.9L12 16.2 6.8 19l1-5.9-4.3-4.2 5.9-.9L12 2.6Z" />
-                          </svg>
+                        <div className={`achievement-geometry-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${textColor}`}>
+                          {renderAchievementIcon(icon)}
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-base font-semibold text-white">{title}</p>
