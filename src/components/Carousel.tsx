@@ -216,12 +216,6 @@ export default function Carousel() {
               style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>{item}</span>
           ))}
         </div>
-        <button className="text-sm font-medium px-5 py-2 rounded-full mt-auto w-fit"
-          style={{
-            background: 'var(--accent-bg)',
-            color: 'var(--accent)',
-            border: '1px solid var(--border-color)',
-          }}>{s.btn}</button>
       </div>
       {/* Dots */}
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-20">

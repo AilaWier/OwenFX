@@ -1,18 +1,15 @@
 ﻿import type { Metadata } from 'next';
-import { Geist, Geist_Mono, Ma_Shan_Zheng } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import Navbar from '@/components/Navbar';
 import BackToTop from '@/components/BackToTop';
 import ScrollToTop from '@/components/ScrollToTop';
-import PageScrollIndicator from '@/components/PageScrollIndicator';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
-const maShanZheng = Ma_Shan_Zheng({ weight: '400', subsets: ['latin'] });
-
 export const metadata: Metadata = {
   title: 'OwenFX — 精选软件与文章',
   description: 'OwenFX 是一个精选软件资源分享站，汇集免费、开源、实用软件与技术文章。',
@@ -23,11 +20,13 @@ const themeInitScript = `(() => {
     const theme = localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.style.colorScheme = theme;
-  } catch (_) {
+  } catch {
     document.documentElement.setAttribute('data-theme', 'dark');
     document.documentElement.style.colorScheme = 'dark';
   }
 })();`;
+
+const criticalLayoutStyle = `html{overflow-y:scroll;overflow-x:hidden;scrollbar-gutter:stable}body{margin:0;background:var(--bg-primary,#0b0f1a);color:var(--text-primary,#f1f5f9)}`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let initialUser: { id: string; name: string; email?: string | null; avatar_url: string | null } | null = null;
@@ -51,14 +50,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           displayName = prof.display_name;
           av = prof.avatar_url;
         }
-      } catch (_) {}
+      } catch {}
       initialUser = { id: session.user.id, name: displayName || metadataName || session.user.email?.split('@')[0] || '用户', email: session.user.email, avatar_url: av || metadataAvatar };
     }
-  } catch (_) {}
+  } catch {}
 
   return (
     <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} style={{ overflowY: 'scroll', overflowX: 'hidden', scrollbarGutter: 'stable' }} data-theme="dark" suppressHydrationWarning>
-            <head><script dangerouslySetInnerHTML={{ __html: themeInitScript }} /><style>{'html{scrollbar-gutter:stable;scrollbar-width:none}html::-webkit-scrollbar{width:0;height:0}body{margin:0}'}</style></head>
+            <head><script dangerouslySetInnerHTML={{ __html: themeInitScript }} /><style dangerouslySetInnerHTML={{ __html: criticalLayoutStyle }} /></head>
       <body style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         <ThemeProvider>
           <Navbar initialUser={initialUser} />
@@ -70,7 +69,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </ThemeProvider>
           <BackToTop />
           <ScrollToTop />
-          <PageScrollIndicator />
       </body>
     </html>
   );

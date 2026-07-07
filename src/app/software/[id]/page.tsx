@@ -11,20 +11,11 @@ export default async function SoftwareDetailPage({ params }: { params: Promise<{
   if (!item) return (
     <div className="px-6 py-16 text-center">
       <h2 className="text-xl font-semibold mb-3">软件未找到</h2>
-      <Link href="/software" className="text-sm inline-flex items-center gap-2" style={{ color: 'var(--accent)' }}>
-        返回软件库
-        <span className="inline-flex items-center gap-0.5"><span style={{ color: '#ff5f57' }}>&gt;</span><span style={{ color: '#ffbd2e' }}>&gt;</span><span style={{ color: '#28c840' }}>&gt;</span></span>
-      </Link>
     </div>
   );
 
   return (
     <div className="animate-fade-in px-6 py-8 max-w-3xl mx-auto">
-      <Link href="/software" className="text-sm inline-flex items-center gap-2 mb-6" style={{ color: 'var(--accent)' }}>
-        返回软件库
-        <span className="inline-flex items-center gap-0.5"><span style={{ color: '#ff5f57' }}>&gt;</span><span style={{ color: '#ffbd2e' }}>&gt;</span><span style={{ color: '#28c840' }}>&gt;</span></span>
-      </Link>
-
       <div className="rounded-xl p-6 mb-6" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="flex items-start justify-between mb-4">
           <div>

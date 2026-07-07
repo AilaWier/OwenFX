@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE, isSupportedRegistrationEmail } from '@/lib/registration-email';
 
@@ -56,20 +56,6 @@ export default function RegisterPage() {
       setVerifying(false);
     } catch { setErrorMsg('验证失败'); setVerifying(false); }
   };
-
-  useEffect(() => {
-    const prev = { bodyOverflow: document.body.style.overflow, htmlOverflow: document.documentElement.style.overflow, bodyPos: document.body.style.position, bodyW: document.body.style.width };
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-    return () => {
-      document.body.style.overflow = prev.bodyOverflow;
-      document.documentElement.style.overflow = prev.htmlOverflow;
-      document.body.style.position = prev.bodyPos;
-      document.body.style.width = prev.bodyW;
-    };
-  }, []);
 
   return (
     <div className="flex items-center justify-center px-6 overflow-hidden" style={{ height: 'calc(var(--app-height) - 3.5rem)' }}>

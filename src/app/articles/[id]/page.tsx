@@ -2,7 +2,6 @@
 import { useParams } from 'next/navigation';
 import { getArticle } from '@/lib/mock-articles';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import ArticleSupport from '@/components/ArticleSupport';
 import { sortTagsByLength } from '@/lib/tag-utils';
 
@@ -97,19 +96,11 @@ export default function ArticleDetailPage() {
   if (!article) return (
     <div className="px-6 py-16 text-center">
       <h2 className="text-xl font-semibold mb-3">文章未找到</h2>
-      <Link href="/articles" className="text-sm inline-flex items-center gap-2" style={{color:'var(--accent)'}}>
-        返回
-        <span className="inline-flex items-center gap-0.5"><span style={{color:'#ff5f57'}}>&gt;</span><span style={{color:'#ffbd2e'}}>&gt;</span><span style={{color:'#28c840'}}>&gt;</span></span>
-      </Link>
     </div>
   );
 
   return (
     <div className="animate-fade-in px-6 py-8 max-w-3xl mx-auto">
-          <Link href="/articles" className="text-sm inline-flex items-center gap-2 mb-6" style={{color:'var(--accent)'}}>
-            返回文章列表
-        <span className="inline-flex items-center gap-0.5"><span style={{color:'#ff5f57'}}>&gt;</span><span style={{color:'#ffbd2e'}}>&gt;</span><span style={{color:'#28c840'}}>&gt;</span></span>
-          </Link>
       <div className="flex items-center gap-2 text-sm mb-4" style={{color:'var(--text-secondary)'}}>
         <span className="font-semibold monet-waterlily-flow">OWEN</span>
         <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{background:'var(--accent-bg)'}}><span className="monet-waterlily-flow">站长</span></span>
@@ -135,25 +126,26 @@ export default function ArticleDetailPage() {
 
       {/* Comments */}
       <div className="rounded-xl p-4 sm:p-6" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-        <h3 className="text-base font-semibold mb-4">评论 ({comments.length})</h3>
-        <div className="flex items-start gap-4 mb-6">
-          <div className="w-14 shrink-0 flex flex-col items-center gap-2 text-center">
-            <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-xs font-medium" style={{background:'var(--accent-bg)', color:'var(--accent)'}}>
-              {currentUser?.avatar_url ? <img src={currentUser.avatar_url} alt="avatar" className="h-full w-full object-cover" /> : currentUserInitial}
-            </div>
-            <span className="max-w-14 truncate text-xs" style={{color:'var(--text-tertiary)'}}>{userLoading ? '...' : currentUserName}</span>
+        <div className="mb-4 flex items-center gap-3">
+          <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center text-base font-medium shrink-0" style={{background:'var(--accent-bg)', color:'var(--accent)'}}>
+            {currentUser?.avatar_url ? <img src={currentUser.avatar_url} alt="avatar" className="h-full w-full object-cover" /> : currentUserInitial}
           </div>
-          <div className="flex-1">
+          <span className="max-w-40 truncate text-sm font-medium" style={{color:'var(--text-secondary)'}}>
+            {userLoading ? '...' : currentUserName}
+          </span>
+        </div>
+        <div className="mb-3 flex flex-col items-center">
+          <div className="w-full max-w-2xl space-y-2">
             <textarea placeholder={currentUser ? '写下评论...' : '登录后评论'} rows={3} value={cmtText} onChange={e => setCmtText(e.target.value)} disabled={!currentUser || userLoading}
-              className="w-full text-sm p-2.5 rounded-lg mb-2 outline-none resize-none transition-all"
+              className="block w-full box-border text-sm p-3 rounded-xl outline-none resize-none transition-all"
               style={{ background: 'var(--input-bg)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
               onFocus={e => e.target.style.borderColor = 'var(--accent)'}
               onBlur={e => e.target.style.borderColor = 'var(--border-color)'} />
-            <button onClick={addComment} disabled={!currentUser || userLoading || !cmtText.trim()} className="uiverse-btn uiverse-btn-primary w-full text-sm !p-2.5 rounded-lg outline-none cursor-pointer">发表评论</button>
+            <button onClick={addComment} disabled={!currentUser || userLoading || !cmtText.trim()} className="uiverse-btn uiverse-btn-primary block w-full box-border text-sm !p-3 rounded-xl outline-none cursor-pointer">发表评论</button>
           </div>
         </div>
         {comments.length === 0 ? (
-          <p className="text-sm text-center py-6" style={{color:'var(--text-tertiary)'}}>暂无评论</p>
+          <p className="text-sm text-center py-3" style={{color:'var(--text-tertiary)'}}>暂无评论</p>
         ) : (
           comments.map((c, i) => (
             <div key={i} className="flex gap-3 mb-4 animate-slide-in-left" style={{animationDelay: i * 50 + 'ms'}}>
