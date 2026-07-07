@@ -1,5 +1,7 @@
 ﻿import { Software } from './types';
 
+import { sortTagsByLength } from './tag-utils';
+
 export const mockSoftware: Software[] = [
   { id: '1', title: 'NanaZip', description: '一款开源文件归档工具，经典 7-Zip 的现代化分支。', category: '工具', tags: ['压缩', '开源', '免费'], downloadUrl: 'https://github.com/M2Team/NanaZip', updatedAt: '2026-06-20', featured: true, version: '5.0', size: '8.2 MB', platform: 'Windows' },
   { id: '2', title: 'Everything', description: '瞬间按名称定位文件和文件夹。', category: '工具', tags: ['搜索', '文件管理', '高效'], downloadUrl: 'https://www.voidtools.com/', updatedAt: '2026-06-18', featured: true, version: '1.4.1', size: '1.5 MB', platform: 'Windows' },
@@ -25,7 +27,7 @@ export const mockCategories = [
 
 export const categoryOrder = ['工具', '多媒体', '开发工具', '系统增强', 'Android软件', 'Windows软件'];
 
-export const allTags = Array.from(new Set(mockSoftware.flatMap(s => s.tags)));
+export const allTags = sortTagsByLength(Array.from(new Set(mockSoftware.flatMap(s => s.tags))));
 
 
 export const categoryColors: Record<string, string> = {

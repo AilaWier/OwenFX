@@ -1,5 +1,8 @@
 ﻿import { Software } from '@/lib/types';
 
+import { categoryColors } from '@/lib/mock';
+import { sortTagsByLength } from '@/lib/tag-utils';
+
 interface SoftwareCardProps {
   software: Software;
 }
@@ -17,6 +20,7 @@ export default function SoftwareCard({ software }: SoftwareCardProps) {
     size,
     platform,
   } = software;
+  const sortedTags = sortTagsByLength(tags);
 
   return (
     <article className="card-hover bg-bg-card border border-border-color rounded-lg p-4">
@@ -37,16 +41,18 @@ export default function SoftwareCard({ software }: SoftwareCardProps) {
           <p className="text-sm text-text-secondary mb-3 line-clamp-2">{description}</p>
 
           {/* Tags */}
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {tags.slice(0, 4).map((tag) => (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {sortedTags.slice(0, 4).map((tag) => (
               <span
                 key={tag}
-                className="px-2 py-0.5 text-xs text-accent bg-accent/8 rounded-full"
+                className="px-1.5 py-[2px] text-[11px] rounded-full inline-flex items-center gap-1"
+                style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
               >
+                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ backgroundColor: categoryColors[category] }}></span>
                 {tag}
               </span>
             ))}
-            <span className="px-2 py-0.5 text-xs text-text-secondary bg-white/5 rounded-full">
+            <span className="px-1.5 py-[2px] text-[11px] text-text-secondary bg-white/5 rounded-full">
               {category}
             </span>
           </div>

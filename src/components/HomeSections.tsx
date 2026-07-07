@@ -2,10 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { categoryColors } from '@/lib/mock';
+import { sortTagsByLength } from '@/lib/tag-utils';
+import type { Article } from '@/lib/mock-articles';
+import type { Software } from '@/lib/types';
 
 interface HomeSectionProps {
-  articles: any[];
-  featured: any[];
+  articles: Article[];
+  featured: Software[];
 }
 
 const PAGE_SIZE = 6;
@@ -22,7 +26,7 @@ export default function HomeSections({ articles, featured }: HomeSectionProps) {
           <Link href="/articles" className="text-sm" style={{ color: 'var(--accent)' }}>查看全部</Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {articles.map((a: any, i: number) => (
+          {articles.map((a, i) => (
             <Link key={a.id} href={'/articles/' + a.id} className="uiverse-card p-5 animate-fade-in" style={{ animationDelay: i * 80 + 'ms' }}>
               <span className="text-xs font-medium rounded-full px-2 py-0.5 mb-3 inline-block" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>{a.category}</span>
               <h3 className="font-semibold mb-2 line-clamp-2">{a.title}</h3>
@@ -40,14 +44,14 @@ export default function HomeSections({ articles, featured }: HomeSectionProps) {
             <Link href="/software" className="text-sm" style={{ color: 'var(--accent)' }}>查看全部</Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {featured.slice(fp * PAGE_SIZE, (fp + 1) * PAGE_SIZE).map((s: any, i: number) => (
+            {featured.slice(fp * PAGE_SIZE, (fp + 1) * PAGE_SIZE).map((s, i) => (
               <Link key={s.id} href={'/software/' + s.id} className="uiverse-card p-5 animate-fade-in" style={{ animationDelay: i * 80 + 'ms' }}>
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="font-semibold text-base truncate">{s.title}</h3>
                   <span className="shrink-0 ml-2 px-2 py-0.5 text-[10px] font-semibold rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>{s.category}</span>
                 </div>
                 <p className="text-sm mb-3 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{s.description}</p>
-                <div className="flex flex-wrap gap-1.5">{s.tags.slice(0, 3).map((t: string) => (<span key={t} className="px-2 py-0.5 text-xs rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>{t}</span>))}</div>
+                <div className="flex flex-wrap gap-1">{sortTagsByLength(s.tags).slice(0, 3).map((t: string) => (<span key={t} className="px-1.5 py-[2px] text-[11px] rounded-full inline-flex items-center gap-1" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}><span className="inline-block w-1.5 h-1.5 rounded-full" style={{ backgroundColor: categoryColors[s.category] }}></span>{t}</span>))}</div>
               </Link>
             ))}
           </div>

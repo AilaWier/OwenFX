@@ -1,7 +1,7 @@
-import { mockSoftware } from '@/lib/mock';
+import { categoryColors, mockSoftware } from '@/lib/mock';
+import { sortTagsByLength } from '@/lib/tag-utils';
 import Link from 'next/link';
 import DownloadButton from '@/components/DownloadButton';
-import ArticleSupport from '@/components/ArticleSupport';
 
 export default async function SoftwareDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -34,8 +34,8 @@ export default async function SoftwareDetailPage({ params }: { params: Promise<{
         </div>
         <p className="text-sm mb-4 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{item.description}</p>
 
-        <div className="flex flex-wrap gap-2 mb-4">
-          {item.tags.map(t => <span key={t} className="px-2 py-0.5 text-xs rounded-full" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>{t}</span>)}
+        <div className="flex flex-wrap gap-1 mb-4">
+          {sortTagsByLength(item.tags).map(t => <span key={t} className="px-1.5 py-[2px] text-[11px] rounded-full inline-flex items-center gap-1" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}><span className="inline-block w-1.5 h-1.5 rounded-full" style={{ backgroundColor: categoryColors[item.category] }}></span>{t}</span>)}
         </div>
 
         <div className="flex flex-wrap gap-4 text-sm mb-6" style={{ color: 'var(--text-tertiary)' }}>
@@ -62,7 +62,6 @@ export default async function SoftwareDetailPage({ params }: { params: Promise<{
         </div>
       </div>
 
-      <ArticleSupport />
     </div>
   );
 }

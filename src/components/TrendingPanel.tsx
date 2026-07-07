@@ -1,4 +1,6 @@
-﻿interface TrendingPanelProps {
+import { sortTagsByLength } from '@/lib/tag-utils';
+
+interface TrendingPanelProps {
   tags: string[];
   categories: { name: string; count: number }[];
 }
@@ -15,7 +17,7 @@ export default function TrendingPanel({ tags, categories }: TrendingPanelProps) 
           热门标签
         </h3>
         <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => (
+          {sortTagsByLength(tags).map((tag) => (
             <button
               key={tag}
               className="px-2.5 py-1 text-xs text-accent bg-accent/8 rounded-full hover:bg-accent/15 transition-colors"

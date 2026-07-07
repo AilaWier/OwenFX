@@ -1,3 +1,5 @@
+import ArticleSupport from '@/components/ArticleSupport';
+
 interface DownloadButtonProps {
   downloadUrl: string;
 }
@@ -33,6 +35,7 @@ export default function DownloadButton({ downloadUrl }: DownloadButtonProps) {
         </svg>
         官方下载
       </a>
+      <ArticleSupport />
     </div>
   );
 }

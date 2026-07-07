@@ -4,6 +4,7 @@ import { getArticle } from '@/lib/mock-articles';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ArticleSupport from '@/components/ArticleSupport';
+import { sortTagsByLength } from '@/lib/tag-utils';
 
 type CommentItem = { id?: string; name: string; text: string; date: string; avatar_url?: string | null };
 type CurrentUser = { id: string; name: string; email?: string | null; avatar_url: string | null };
@@ -123,7 +124,7 @@ export default function ArticleDetailPage() {
           {renderContent(article.content)}
         </div>
         <div className="flex flex-wrap gap-2 mt-6">
-          {article.tags.map(t => (
+          {sortTagsByLength(article.tags).map(t => (
                 <span key={t} className="px-3 py-1 text-xs rounded-full inline-flex items-center gap-1" style={{background:'var(--bg-tertiary)', color:'var(--text-secondary)'}}><span className="inline-block w-1.5 h-1.5 rounded-full" style={{backgroundColor: article.category === '工具评测' ? '#6366f1' : article.category === '教程' ? '#f59e0b' : article.category === '系统技巧' ? '#10b981' : '#6366f1'}}></span>{t}</span>
           ))}
         </div>
